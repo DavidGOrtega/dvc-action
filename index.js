@@ -1,9 +1,3 @@
-
-
-const execRaw = require('child_process').exec;
-
-execRaw('npm install', async () =>{
-
 const core = require('@actions/core')
 const github = require('@actions/github')
 
@@ -422,5 +416,3 @@ const run_action = async () => {
 }
 
 run_action();
-
-});
