@@ -1,3 +1,9 @@
+
+
+const execRaw = require('child_process').exec;
+
+execRaw('npm install', async () =>{
+
 const core = require('@actions/core')
 const github = require('@actions/github')
 
@@ -7,7 +13,6 @@ const exec = util.promisify(require('child_process').exec)
 const fs = require('fs')
 const writeFile = util.promisify(fs.writeFile)
 const readFile = util.promisify(fs.readFile)
-
 
 const imgur = require('imgur')
 imgur.setClientId('9ae2688f25fae09');
@@ -377,11 +382,9 @@ const run_repro = async () => {
   }
 }
 
-const install_dvc = async () => {
+const install_dependencies = async () => {
   console.log('installing dvc...')
   await exe('pip install dvc');
-
-  await exe('npm install vega canvas');
 }
 
 const vega2md = async (name, vega_data) => {
@@ -409,7 +412,7 @@ const run_action = async () => {
       return 0;
     }
 
-    await install_dvc();
+    await install_dependencies();
     await run_repro();
     await check_dvc_report();
   
@@ -419,3 +422,5 @@ const run_action = async () => {
 }
 
 run_action();
+
+});
