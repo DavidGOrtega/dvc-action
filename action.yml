@@ -1,0 +1,26 @@
+name: 'DVC-action'
+description: 'DVC action for CD4ML'
+
+inputs:
+  github_token: 
+    required: true
+
+  dvc_repro_file:
+    required: false
+    default: 'Dvcfile'
+
+  dvc_repro_skip:
+    required: false
+    default: false
+
+  skip_ci: 
+    required: false
+    default: '[ci skip]'
+
+runs:
+  using: 'node12'
+  main: 'index.js'
+
+branding:
+  icon: 'command'  
+  color: 'green'
