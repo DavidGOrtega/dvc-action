@@ -163,6 +163,8 @@ const uuid = () =>{
 
 
 const dvc_report_data_md = async () => {
+  const { before, after } = github.context.payload;
+  
   let summary = 'No data available';
 
   try {
@@ -171,14 +173,15 @@ const dvc_report_data_md = async () => {
 
     let dvc_out;
     try {
-      let cmd = `dvc diff $(git rev-parse HEAD~1) $(git rev-parse HEAD)`;
+      let cmd = `dvc diff $(git rev-parse ${before}) $(git rev-parse ${after})`;
       
-      if (GITHUB_SHA != github.context.payload.after) 
-        cmd = `dvc diff ${github.context.payload.after} ${GITHUB_SHA}`;
+      if (GITHUB_SHA != after) 
+        cmd = `dvc diff ${after} ${GITHUB_SHA}`;
 
       dvc_out = await exe(cmd);
 
     } catch (err) {
+      // TODO: dvc support this
       dvc_out = await exe('dvc diff 4b825dc642cb6eb9a060e54bf8d69288fbee4904 $(git rev-parse HEAD)');
     }
     
@@ -381,7 +384,7 @@ const run_repro = async () => {
   console.log('Pulling from dvc remote');
   const has_dvc_remote = (await exe('dvc remote list')).length;
   if (has_dvc_remote) {
-    await exe('dvc pull');
+    await exe('dvc pull -q');
   } else {
     console.log('Experiment does not have dvc remote!');
   }
@@ -397,23 +400,27 @@ const run_repro = async () => {
 
   const has_changes = true; // TODO: if ! git diff-index --quiet HEAD --; then
   if (has_changes) {
-    console.log('Pushing...');
 
-    await exe(`
-      dvc commit -f
-      git config --local user.email "action@github.com"
-      git config --local user.name "GitHub Action"
-      git commit -a -m "dvc repro ${skip_ci}"
-      git remote add github "https://$GITHUB_ACTOR:${github_token}@github.com/$GITHUB_REPOSITORY.git"
-      git push github HEAD:$GITHUB_REF
-    `);
+    console.log('DVC commit');
+    await exe(`dvc commit -f -q`);
 
     if (has_dvc_remote) {
-      console.log('Pushing to dvc remote');
+      console.log('DVC Push');
       await exe('dvc push');
     }
 
-    // TODO: save artifacts as releases
+    console.log('Git commit');
+    await exe(`
+      git config --local user.email "action@github.com"
+      git config --local user.name "GitHub Action"
+      git commit -a -m "dvc repro ${skip_ci}"
+    `);
+
+    console.log('Git push');
+    await exe(`
+      git remote add github "https://$GITHUB_ACTOR:${github_token}@github.com/$GITHUB_REPOSITORY.git"
+      git push github HEAD:$GITHUB_REF
+    `);
   }
 }
 
@@ -445,7 +452,7 @@ const create_release = async (opts) => {
   const { body } = opts;
 
   const tag_name = GITHUB_SHA.slice(0, 7);
-  
+
   const release = await octokit.repos.createRelease({
       owner,
       repo,
