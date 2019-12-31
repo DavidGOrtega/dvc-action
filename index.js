@@ -11,6 +11,8 @@ const readFile = util.promisify(fs.readFile)
 const imgur = require('imgur')
 imgur.setClientId('9ae2688f25fae09');
 
+const vega = require('vega')
+
 const github_token = core.getInput('github_token');
 const dvc_repro_file = core.getInput('dvc_repro_file');
 const dvc_repro_skip = core.getInput('dvc_repro_skip') === 'true';
@@ -383,7 +385,6 @@ const install_dependencies = async () => {
 }
 
 const vega2md = async (name, vega_data) => {
-  const vega = require('vega')
   const path = `./../${name}.png`;
   const parsed = vega.parse(vega_data);
   const view = new vega.View(parsed, {renderer: 'none'});
