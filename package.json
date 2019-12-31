@@ -25,7 +25,6 @@
   "dependencies": {
     "@actions/core": "^1.2.0",
     "@actions/github": "^2.0.0",
-    "canvas-prebuilt": "^2.0.0-alpha.14",
     "imgur": "^0.3.1",
     "vega": "^5.9.0",
     "vega-lite": "^4.0.2"
