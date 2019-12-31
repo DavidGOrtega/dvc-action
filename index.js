@@ -320,13 +320,14 @@ const check_dvc_report_summary = async () => {
   return summary;
 }
 
-const check_dvc_report = async () => {
+const check_dvc_report = async (opts) => {
+
+  const { summary } = opts;
 
   const started_at = new Date();
   const name = `DVC Report ${uuid()}`;
   const conclusion = 'success';
   const title = 'DVC Report';
-  const summary = await check_dvc_report_summary();
 
   await octokit.checks.create({
     owner,
@@ -460,7 +461,7 @@ const create_release = async (opts) => {
 const run_action = async () => {
   try {
    
-    if (has_skip_ci()) return 0;
+    //if (has_skip_ci()) return 0;
 
     await install_dependencies();
 
