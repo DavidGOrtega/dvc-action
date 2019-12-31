@@ -220,6 +220,7 @@ const dvc_report_metrics_diff_md = async () => {
     } catch (err) {
       if (!STUB) throw err;
 
+      console.log('dvc_report_metrics_diff_md failed, doing STUB');
       // STUB
       dvc_out = DVC_METRICS_DIFF_STUB;
       // STUB ENDS
@@ -258,7 +259,7 @@ const vega2md = async (name, vega_data) => {
 }
 
 
-const dvc_report_metrics_vega_md = async () => {
+const dvc_report_metrics_md = async () => {
   let summary = '';
 
   try {
@@ -266,8 +267,12 @@ const dvc_report_metrics_vega_md = async () => {
     try {
       dvc_out = await exe('dvc metrics show');
 
+      summary += '```${dvc_out}```';
+
     } catch (err) {
       if (!STUB) throw err;
+
+      console.log('dvc_report_metrics_md failed, doing STUB');
 
       // STUB
       dvc_out = DVC_METRICS_STUB;
@@ -308,7 +313,7 @@ const dvc_report_metrics_vega_md = async () => {
 const check_dvc_report_summary = async () => {
   const data = await dvc_report_data_md();
   const metrics_diff = await dvc_report_metrics_diff_md();
-  const metrics_vega = await dvc_report_metrics_vega_md();
+  const metrics_vega = await dvc_report_metrics_md();
 
   const summary = `### Data  \n${data}  \n### Metrics  \n${metrics_diff}\n${metrics_vega}`;
 
@@ -341,7 +346,7 @@ const check_dvc_report = async () => {
 }
 
 
-const skip_ci = async () => {
+const has_skip_ci = async () => {
   console.log('Checking skip');
   const last_log = await exe('git log -1');
   
@@ -455,7 +460,7 @@ const create_release = async (opts) => {
 const run_action = async () => {
   try {
    
-    if (skip_ci()) return 0;
+    if (has_skip_ci()) return 0;
 
     await install_dependencies();
 
