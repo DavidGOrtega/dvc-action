@@ -379,6 +379,7 @@ const run_repro = async () => {
 const install_dependencies = async () => {
   console.log('installing dvc...')
   await exe('pip install dvc');
+  await exe('npm install -g canvas');
 }
 
 const vega2md = async (name, vega_data) => {
