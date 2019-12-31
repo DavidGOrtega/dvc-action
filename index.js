@@ -444,7 +444,8 @@ const octokit_upload_release_asset = async (url, filepath) => {
 const create_release = async (opts) => {
   const { body } = opts;
 
-  const tag_name = `${GITHUB_SHA}`;
+  const tag_name = GITHUB_SHA.slice(0, 7);
+  
   const release = await octokit.repos.createRelease({
       owner,
       repo,
