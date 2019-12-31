@@ -150,7 +150,6 @@ const exe = async (command) => {
   const { stdout, stderr, error } = await exec(command);
 
   console.log(stdout);
-  console.log(stderr);
 
   if (error) throw new Error(stderr);
 
@@ -161,6 +160,7 @@ const exe = async (command) => {
 const uuid = () =>{
   return new Date().getUTCMilliseconds()
 }
+
 
 const dvc_report_data_md = async () => {
   let summary = 'No data available';
@@ -238,6 +238,23 @@ const dvc_report_metrics_diff_md = async () => {
   }
  
   return summary;
+}
+
+
+const vega2md = async (name, vega_data) => {
+  const vega = require('vega')
+  
+  const path = `./../${name}.png`;
+  const parsed = vega.parse(vega_data);
+  const view = new vega.View(parsed, {renderer: 'none'});
+
+  const canvas = await view.toCanvas();
+
+  await writeFile(path, canvas.toBuffer())
+
+  const imgur_resp = await imgur.uploadFile(path);
+
+  return `![${name}](${imgur_resp.data.link})`;
 }
 
 
@@ -324,6 +341,24 @@ const check_dvc_report = async () => {
 }
 
 
+const skip_ci = async () => {
+  console.log('Checking skip');
+  const last_log = await exe('git log -1');
+  
+  if (last_log.includes(skip_ci)) {
+    console.log(`${skip_ci} found! skipping task`);
+    return true;
+  }
+
+  return false;
+}
+
+const install_dependencies = async () => {
+  console.log('installing dvc...')
+  await exe('pip install dvc');
+}
+
+
 const run_repro = async () => {
   
   if (dvc_repro_skip) {
@@ -337,14 +372,14 @@ const run_repro = async () => {
     throw new Error(`DVC repro file ${dvc_repro_file} not found`);
 
 
+  console.log('Pulling from dvc remote');
   const has_dvc_remote = (await exe('dvc remote list')).length;
   if (has_dvc_remote) {
-    console.log('Pulling from dvc remote');
     await exe('dvc pull');
-  
   } else {
     console.log('Experiment does not have dvc remote!');
   }
+
 
   console.log(`echo Running dvc repro ${dvc_repro_file}`);
   try {
@@ -376,42 +411,59 @@ const run_repro = async () => {
   }
 }
 
-const install_dependencies = async () => {
-  console.log('installing dvc...')
-  await exe('pip install dvc');
-  //await exe('npm i canvas');
-  //await exe('git status');
+
+const octokit_upload_release_asset = async (url, filepath) => {
+  const stat = fs.statSync(filepath);
+
+  if (!stat.isFile()) {
+      console.log(`Skipping, ${filepath} its not a file`);
+      return;
+  }
+
+  const file = fs.readFileSync(filepath);
+  const name = path.basename(filepath);
+
+  await octokit.repos.uploadReleaseAsset({
+      url,
+      name,
+      file,
+      headers: {
+          "content-type": "binary/octet-stream",
+          "content-length": stat.size
+      },
+  });
 }
 
-const vega2md = async (name, vega_data) => {
-  const vega = require('vega')
-  
-  const path = `./../${name}.png`;
-  const parsed = vega.parse(vega_data);
-  const view = new vega.View(parsed, {renderer: 'none'});
 
-  const canvas = await view.toCanvas();
+const create_release = async (opts) => {
+  const { body } = opts;
 
-  await writeFile(path, canvas.toBuffer())
+  const tag_name = `test_${GITHUB_SHA}`;
+  const release = await octokit.repos.createRelease({
+      owner,
+      repo,
+      head_sha: GITHUB_SHA,
 
-  const imgur_resp = await imgur.uploadFile(path);
+      tag_name,
+      body
+  });
 
-  return `![${name}](${imgur_resp.data.link})`;
+  //await exe('echo data1 > data.txt');
+  //await octokit_upload_release_asset(release.data.upload_url, 'data.txt');
 }
-
 
 const run_action = async () => {
   try {
-    console.log('Checking skip');
-    const last_log = await exe('git log -1');
-    if (last_log.includes(skip_ci)) {
-      console.log(`${skip_ci} found! skipping task`);
-      return 0;
-    }
+   
+    if (skip_ci()) return 0;
 
     await install_dependencies();
+
     await run_repro();
-    await check_dvc_report();
+
+    const report = await check_dvc_report_summary();
+    await check_dvc_report({ summary: report });
+    await create_release({ body: report });
   
   } catch (error) {
     core.setFailed(error.message);
