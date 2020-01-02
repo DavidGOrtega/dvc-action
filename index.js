@@ -260,7 +260,7 @@ const vega2md = async (name, vega_data) => {
 
   const imgur_resp = await imgur.uploadFile(path);
 
-  return ` ![${name}](${imgur_resp.data.link}) `;
+  return `![${name}](${imgur_resp.data.link})`;
 }
 
 
@@ -272,7 +272,7 @@ const dvc_report_metrics_md = async () => {
     try {
       dvc_out = await exe('dvc metrics show');
 
-      summary += "```" + dvc_out + "```\n";
+      summary += "```" + dvc_out + "``` \n";
 
     } catch (err) {
       if (!STUB) throw err;
@@ -297,7 +297,7 @@ const dvc_report_metrics_md = async () => {
         if (!file.includes('"')) {
           const content = await readFile(file, "utf8");
 
-          summary += await vega2md(file, JSON.parse(content));
+          summary += (await vega2md(file, JSON.parse(content))) + '  \n';
         }
       
       } catch(err) {
@@ -319,7 +319,7 @@ const check_dvc_report_summary = async () => {
   const metrics_diff = await dvc_report_metrics_diff_md();
   const metrics_vega = await dvc_report_metrics_md();
 
-  const summary = `### Data  \n${data}  \n### Metrics  \n${metrics_diff}\n${metrics_vega}`;
+  const summary = `### Data  \n${data}  \n### Metrics  \n ${metrics_diff} \n${metrics_vega}`;
 
   return summary;
 }
