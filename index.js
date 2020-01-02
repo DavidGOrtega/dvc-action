@@ -386,6 +386,7 @@ const run_repro = async () => {
 
   console.log('Pulling from dvc remote');
   const has_dvc_remote = (await exe('dvc remote list')).length;
+  console.log(`has_dvc_remote length: ${(await exe('dvc remote list')).length}`);
   if (has_dvc_remote) {
     await exe('dvc pull -q');
   } else {
@@ -405,7 +406,7 @@ const run_repro = async () => {
   if (has_changes) {
 
     console.log('DVC commit');
-    await exe(`dvc commit -f -q`);
+    await exe('dvc commit -f -q');
 
     if (has_dvc_remote) {
       console.log('DVC Push');
