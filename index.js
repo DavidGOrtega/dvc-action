@@ -272,7 +272,7 @@ const dvc_report_metrics_md = async () => {
     try {
       dvc_out = await exe('dvc metrics show');
 
-      summary += '```${dvc_out}```';
+      summary += dvc_out;
 
     } catch (err) {
       if (!STUB) throw err;
