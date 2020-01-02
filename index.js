@@ -149,14 +149,13 @@ const VEGA_DATA = {
 const exe = async (command) => {
   const { stdout, stderr, error } = await exec(command);
 
-
   console.log(`\nCommand: ${command}`);
   console.log(stdout);
   console.log("####\n");
 
   if (error) throw new Error(stderr);
 
-  return stdout ? stdout : stderr;
+  return stdout;
 }
 
 
