@@ -272,7 +272,7 @@ const dvc_report_metrics_md = async () => {
     try {
       dvc_out = await exe('dvc metrics show');
 
-      summary += dvc_out;
+      summary += "```" + dvc_out + "```";
 
     } catch (err) {
       if (!STUB) throw err;
@@ -287,7 +287,7 @@ const dvc_report_metrics_md = async () => {
       // STUB ENDS
     }
     
-    const regex = /.+?:/gm;;
+    const regex = /.+?:/gm;
     const matches = dvc_out.match(regex);
 
     for (idx in matches) {
