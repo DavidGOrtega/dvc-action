@@ -13,6 +13,10 @@ inputs:
     required: false
     default: false
 
+  files: 
+    required: false
+    default: []
+
   skip_ci: 
     required: false
     default: '[ci skip]'
