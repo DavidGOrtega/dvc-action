@@ -384,7 +384,7 @@ const run_repro = async () => {
     console.log(err.message); // TODO: dvc uses the stderr to WARNING: Dependency of changed because it is 'modified'. 
   }
   
-  console.log('\n\n\n\nXX
+  console.log('\n\n\n\n#######');
   const xx = await exec(`! git diff-index --quiet HEAD --`);
   console.log(xx);
 
