@@ -250,7 +250,7 @@ const dvc_report_metrics_diff_md = async () => {
 const vega2md = async (name, vega_data) => {
   const vega = require('vega')
   
-  const path = `./../${name}.png`;
+  const path = `./../${uuid()}.png`;
   const parsed = vega.parse(vega_data);
   const view = new vega.View(parsed, {renderer: 'none'});
 
