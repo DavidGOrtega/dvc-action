@@ -176,7 +176,7 @@ const dvc_report_data_md = async () => {
 
     let dvc_out;
     try {
-      let cmd = `dvc diff $(git rev-parse ${before}) $(git rev-parse ${after})`;
+      let cmd = `dvc diff diff HEAD^ HEAD`;
       
       if (GITHUB_SHA != after) 
         cmd = `dvc diff ${after} ${GITHUB_SHA}`;
