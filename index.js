@@ -13,7 +13,6 @@ imgur.setClientId('9ae2688f25fae09');
 
 const github_token = core.getInput('github_token');
 const dvc_repro_file = core.getInput('dvc_repro_file');
-const dvc_repro_skip = core.getInput('dvc_repro_skip') === 'true';
 const files = core.getInput('files');
 const skip_ci = core.getInput('skip_ci');
 
@@ -26,9 +25,9 @@ const [owner, repo] = GITHUB_REPOSITORY.split('/');
 const octokit = new github.GitHub(github_token);
 
 // console.log(core);
-// console.log(process.env);
+console.log(process.env);
 // console.log(github.context);
-// console.log(github.context.payload);
+console.log(github.context.payload);
 
 
 const DVC_METRICS_DIFF_STUB = {
