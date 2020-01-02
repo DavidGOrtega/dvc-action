@@ -53,6 +53,6 @@ jobs:
       - uses: ./
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          dvc_repro_skip: true
+          dvc_repro_file: 'None'
         env:
           STUB: true
