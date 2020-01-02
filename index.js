@@ -13,7 +13,7 @@ imgur.setClientId('9ae2688f25fae09');
 
 const github_token = core.getInput('github_token');
 const dvc_repro_file = core.getInput('dvc_repro_file');
-const files = core.getInput('files');
+const files = core.getInput('files') || [];
 const skip_ci = core.getInput('skip_ci');
 
 const GITHUB_SHA = process.env.GITHUB_SHA;
