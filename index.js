@@ -356,7 +356,7 @@ const install_dependencies = async () => {
 
 const run_repro = async () => {
   
-  if (dvc_repro_skip) {
+  if (dvc_repro_file === 'None') {
     console.log('DVC repro skipped');
     return;
   }
