@@ -14,6 +14,7 @@ imgur.setClientId('9ae2688f25fae09');
 const github_token = core.getInput('github_token');
 const dvc_repro_file = core.getInput('dvc_repro_file');
 const dvc_repro_skip = core.getInput('dvc_repro_skip') === 'true';
+const files = core.getInput('files');
 const skip_ci = core.getInput('skip_ci');
 
 const GITHUB_SHA = process.env.GITHUB_SHA;
@@ -268,24 +269,9 @@ const dvc_report_metrics_md = async () => {
   let summary = 'No metrics available';
 
   try {
-    let dvc_out;
-    try {
-      dvc_out = await exe('dvc metrics show');
+    const dvc_out = await exe('dvc metrics show');
 
-      summary = "```\n" + dvc_out + "\n```\n";
-
-    } catch (err) {
-      if (!STUB) throw err;
-
-      // STUB
-      console.log('dvc_report_metrics_md failed, doing STUB');
-      dvc_out = DVC_METRICS_STUB;
-      await writeFile('file1.json', JSON.stringify(VEGA_DATA));
-      await writeFile('file2.txt', 'stat2');
-      await writeFile('file3.json', JSON.stringify(VEGA_DATA));
-      await writeFile('file4.txt', 'stat4');
-      // STUB ENDS
-    }
+    summary = "```\n" + dvc_out + "\n```\n";
     
     const regex = /.+?:/gm;
     const matches = dvc_out.match(regex);
@@ -301,8 +287,7 @@ const dvc_report_metrics_md = async () => {
         }
       
       } catch(err) {
-        console.log(`${file} is not a valid vega file`);
-        console.log(err);
+        console.log(``);
       }
     }
   
@@ -321,10 +306,6 @@ const check_dvc_report_summary = async () => {
 
   const summary = `### Data  \n${data}  \n### Metrics  \n ${metrics_diff} \n${metrics_vega}`;
 
-  console.log('\n\n\n\n');
-  console.log(summary);
-  console.log('\n\n\n\n');
-  
   return summary;
 }
 
@@ -403,6 +384,8 @@ const run_repro = async () => {
     console.log(err.message); // TODO: dvc uses the stderr to WARNING: Dependency of changed because it is 'modified'. 
   }
   
+  console.log('\n\n\n\n#######');
+  console.log(exec(`! git diff-index --quiet HEAD --`));
 
   const has_changes = true; // TODO: if ! git diff-index --quiet HEAD --; then
   if (has_changes) {
@@ -468,8 +451,10 @@ const create_release = async (opts) => {
       body
   });
 
-  //await exe('echo data1 > data.txt');
-  //await octokit_upload_release_asset(release.data.upload_url, 'data.txt');
+  // TODO: promisify all
+  for (idx in files) {
+    await octokit_upload_release_asset(release.data.upload_url, files[idx]);
+  }
 }
 
 const run_action = async () => {
