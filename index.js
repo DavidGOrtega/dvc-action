@@ -214,7 +214,7 @@ const dvc_report_data_md = async () => {
 
 
 const dvc_report_metrics_diff_md = async () => {
-  let summary = 'No metrics available';
+  let summary = 'No metrics difference available';
 
   try {
 
@@ -260,19 +260,19 @@ const vega2md = async (name, vega_data) => {
 
   const imgur_resp = await imgur.uploadFile(path);
 
-  return `![${name}](${imgur_resp.data.link})`;
+  return ` ![${name}](${imgur_resp.data.link}) `;
 }
 
 
 const dvc_report_metrics_md = async () => {
-  let summary = '';
+  let summary = 'No metrics available';
 
   try {
     let dvc_out;
     try {
       dvc_out = await exe('dvc metrics show');
 
-      summary += "```" + dvc_out + "```";
+      summary += "```" + dvc_out + "```\n";
 
     } catch (err) {
       if (!STUB) throw err;
