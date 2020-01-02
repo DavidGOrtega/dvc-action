@@ -272,7 +272,7 @@ const dvc_report_metrics_md = async () => {
     try {
       dvc_out = await exe('dvc metrics show');
 
-      summary += "```" + dvc_out + "``` \n";
+      summary = "```\n" + dvc_out + "\n```\n";
 
     } catch (err) {
       if (!STUB) throw err;
@@ -321,6 +321,10 @@ const check_dvc_report_summary = async () => {
 
   const summary = `### Data  \n${data}  \n### Metrics  \n ${metrics_diff} \n${metrics_vega}`;
 
+  console.log('\n\n\n\n');
+  console.log(summary);
+  console.log('\n\n\n\n');
+  
   return summary;
 }
 
