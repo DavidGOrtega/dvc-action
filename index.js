@@ -385,7 +385,7 @@ const run_repro = async () => {
   }
   
   console.log('\n\n\n\n#######');
-  console.log(exec(`! git diff-index --quiet HEAD --`));
+  console.log((await exec(`! git diff-index --quiet HEAD --`)));
 
   const has_changes = true; // TODO: if ! git diff-index --quiet HEAD --; then
   if (has_changes) {
