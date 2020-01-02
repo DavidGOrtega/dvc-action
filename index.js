@@ -149,7 +149,10 @@ const VEGA_DATA = {
 const exe = async (command) => {
   const { stdout, stderr, error } = await exec(command);
 
+
+  console.log(`\nCommand: ${command}`);
   console.log(stdout);
+  console.log("####\n");
 
   if (error) throw new Error(stderr);
 
@@ -376,7 +379,7 @@ const run_repro = async () => {
   }
 
   const dvc_repro_file_exists = fs.existsSync(dvc_repro_file);
-  
+
   if (!dvc_repro_file_exists) 
     throw new Error(`DVC repro file ${dvc_repro_file} not found`);
 
