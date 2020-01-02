@@ -225,8 +225,8 @@ const dvc_report_metrics_diff_md = async () => {
     } catch (err) {
       if (!STUB) throw err;
 
-      console.log('dvc_report_metrics_diff_md failed, doing STUB');
       // STUB
+      console.log('dvc_report_metrics_diff_md failed, doing STUB');
       dvc_out = DVC_METRICS_DIFF_STUB;
       // STUB ENDS
     }
@@ -277,9 +277,8 @@ const dvc_report_metrics_md = async () => {
     } catch (err) {
       if (!STUB) throw err;
 
-      console.log('dvc_report_metrics_md failed, doing STUB');
-
       // STUB
+      console.log('dvc_report_metrics_md failed, doing STUB');
       dvc_out = DVC_METRICS_STUB;
       await writeFile('file1.json', JSON.stringify(VEGA_DATA));
       await writeFile('file2.txt', 'stat2');
@@ -288,7 +287,7 @@ const dvc_report_metrics_md = async () => {
       // STUB ENDS
     }
     
-    const regex = /\t[^"?].+:/gm;
+    const regex = /.+?:/gm;;
     const matches = dvc_out.match(regex);
 
     for (idx in matches) {
