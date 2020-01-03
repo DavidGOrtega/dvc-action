@@ -193,9 +193,9 @@ const dvc_report_metrics_md = async () => {
 }
 
 
-const check_dvc_report_summary = async () => {
-  const data = await dvc_report_data_md();
-  const metrics_diff = await dvc_report_metrics_diff_md();
+const check_dvc_report_summary = async (opts) => {
+  const data = await dvc_report_data_md(opts);
+  const metrics_diff = await dvc_report_metrics_diff_md(opts);
   const metrics_vega = await dvc_report_metrics_md();
 
   const summary = `### Data  \n${data}  \n### Metrics  \n ${metrics_diff} \n${metrics_vega}`;
