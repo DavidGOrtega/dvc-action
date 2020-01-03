@@ -22,6 +22,7 @@ const {
   GITHUB_REPOSITORY,
   GITHUB_HEAD_REF,
   GITHUB_BASE_REF,
+  GITHUB_EVENT_NAME,
 } = process.env;
 
 const STUB = process.env.STUB === 'true';
