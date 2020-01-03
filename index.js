@@ -253,7 +253,7 @@ const init_remote = async () => {
   const dvc_remote_list =  await exe('dvc remote list');
   const has_dvc_remote = dvc_remote_list.length > 0;
 
-  if (has_dvc_remote) { 
+  if (!has_dvc_remote) { 
     console.log(':warning: Experiment does not have dvc remote!');
     return;
   }
