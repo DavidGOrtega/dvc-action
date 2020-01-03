@@ -31,9 +31,9 @@ const [owner, repo] = GITHUB_REPOSITORY.split('/');
 const octokit = new github.GitHub(github_token);
 
 // console.log(core);
-console.log(process.env);
+// console.log(process.env);
 // console.log(github.context);
-console.log(github.context.payload);
+// console.log(github.context.payload);
 
 
 const DVC_METRICS_DIFF_STUB = {
@@ -62,6 +62,7 @@ const exe = async (command) => {
 
   return stdout;
 }
+
 
 const dvc_has_remote = async() => {
   return (await exe('dvc remote list')).length > 0;
