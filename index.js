@@ -75,7 +75,6 @@ const dvc_report_data_md = async () => {
   let summary = 'No data available';
 
   try {
-    let dvc_out;
     let cmd = `dvc diff $(git rev-parse HEAD~1) $(git rev-parse HEAD)`;
       
     //if (GITHUB_SHA != after) 
