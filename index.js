@@ -47,12 +47,11 @@ const DVC_METRICS_DIFF_STUB = {
 
 
 const exe = async (command) => {
-  console.log(`\nCommand: ${command}`);
-
   const { stdout, stderr, error } = await exec(command);
 
-  console.log(stdout);
-  console.log(stderr);
+  console.log(`\nCommand: ${command}`);
+  console.log(`\t\t${stdout}`);
+  console.log(`\t\t${stderr}`);
   
   if (error) throw new Error(stderr);
 
@@ -330,7 +329,7 @@ const init_remote = async () => {
 
   console.log('Pulling from dvc remote');
   if (has_dvc_remote) {
-    await exe('dvc pull -q');
+    await exe('dvc pull');
   } 
 }
 
@@ -362,7 +361,7 @@ const run_repro = async () => {
   if (has_changes) {
 
     console.log('DVC commit');
-    await exe('dvc commit -f -q');
+    await exe('dvc commit -f');
 
     const has_dvc_remote = await dvc_has_remote();
     if (has_dvc_remote) {
