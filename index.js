@@ -251,28 +251,89 @@ const install_dependencies = async () => {
 }
 
 const init_remote = async () => {
-  // gs
-  const { GOOGLE_APPLICATION_CREDENTIALS } = process.env;
-  if (GOOGLE_APPLICATION_CREDENTIALS) {
-    const path = `./../GOOGLE_APPLICATION_CREDENTIALS.json`;
-    await writeFile(path, GDRIVE_USER_CREDENTIALS);
-    process.env['GOOGLE_APPLICATION_CREDENTIALS'] = path;
+  const dvc_remote_list =  await exe('dvc remote list');
+  const has_dvc_remote = dvc_remote_list.length > 0;
+
+  if (has_dvc_remote) { 
+    console.log(':warning: Experiment does not have dvc remote!');
+    return;
   }
-   
-  // gdrive
-  const { GDRIVE_USER_CREDENTIALS } = process.env;
-  if (GDRIVE_USER_CREDENTIALS) {
-      const path = '.dvc/tmp/gdrive-user-credentials.json';
+
+  // s3
+  if(dvc_remote_list.toLowerCase().includes('s3://')) {
+    const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
+    if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
+      console.log(`:warning: S3 dvc remote found but no credentials found`);
+    }
+  }
+
+  // azure
+  if(dvc_remote_list.toLowerCase().includes('azure://')) {
+    const { AZURE_STORAGE_CONNECTION_STRING, AZURE_STORAGE_CONTAINER_NAME } = process.env;
+    if (!AZURE_STORAGE_CONNECTION_STRING || !AZURE_STORAGE_CONTAINER_NAME) {
+      console.log(`:warning: Azure dvc remote found but no credentials found`);
+    }
+  }
+
+  // Aliyn
+  if(dvc_remote_list.toLowerCase().includes('azure://')) {
+    const { OSS_BUCKET, OSS_ACCESS_KEY_ID, OSS_ACCESS_KEY_SECRET, OSS_ENDPOINT } = process.env;
+    if (!OSS_BUCKET || !OSS_ACCESS_KEY_ID || !OSS_ACCESS_KEY_SECRET || !OSS_ENDPOINT) {
+      console.log(`:warning: Aliyin dvc remote found but no credentials found`);
+    }
+  }
+
+  // gs
+  if(dvc_remote_list.toLowerCase().includes('gs://')) {
+    const { GOOGLE_APPLICATION_CREDENTIALS } = process.env;
+    if (GOOGLE_APPLICATION_CREDENTIALS) {
+      const path = `./../GOOGLE_APPLICATION_CREDENTIALS.json`;
       await writeFile(path, GDRIVE_USER_CREDENTIALS);
+      process.env['GOOGLE_APPLICATION_CREDENTIALS'] = path;
+    
+    } else {
+      console.log(`:warning: Google storage dvc remote found but no credentials found`);
+    }
+  }
+  
+  // gdrive
+  if(dvc_remote_list.toLowerCase().includes('gdrive://')) {
+    
+    const { GDRIVE_USER_CREDENTIALS } = process.env;
+    if (GDRIVE_USER_CREDENTIALS) {
+        const path = '.dvc/tmp/gdrive-user-credentials.json';
+        await writeFile(path, GDRIVE_USER_CREDENTIALS);
+
+    } else {
+      console.log(`:warning: Google drive dvc remote found but no credentials found`);
+    }
+  }
+
+  // ssh
+  if(dvc_remote_list.includes('ssh://')) {
+    
+    const { DVC_REMOTE_SSH_KEY } = process.env;
+    if (DVC_REMOTE_SSH_KEY) {
+        const path = '~/.ssh/dvc_remote.pub';
+        await writeFile(path, DVC_REMOTE_SSH_KEY);
+        await exe(`echo ${path} >> ~/.ssh/known_hosts`);
+
+    } else {
+      console.log(`:warning: SSH dvc remote found but no credentials found`);
+    }
+  }
+
+  // HDFS
+  if(dvc_remote_list.includes('hdfs://')) {
+    // TODO: implement
+    console.log(`:warning: HDFS not yet implemented`);
   }
 
   console.log('Pulling from dvc remote');
   const has_dvc_remote = await dvc_has_remote();
   if (has_dvc_remote) {
     await exe('dvc pull -q');
-  } else {
-    console.log('Experiment does not have dvc remote!');
-  }
+  } 
 }
 
 
