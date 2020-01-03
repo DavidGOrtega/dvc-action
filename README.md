@@ -64,7 +64,7 @@ jobs:
 
 Dvc support different kinds of remote [storage](https://dvc.org/doc/command-reference/remote/add). 
 To setup them properely you have to setup credentials (if needed) as enviroment variables. We choose env variables and not inputs to be compatible with other github actions that set credentials like https://github.com/aws-actions/configure-aws-credentials.  
-Of course we recommend you to set those variables as [secrets](https://help.github.com/es/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets) to keep the safe.
+We recommend you to set those variables as [secrets](https://help.github.com/es/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets) to keep the safe.
 
 #### S3 and S3 compatible storage (Minio, DigitalOcean Spaces, IBM Cloud Object Storage...) 
 
