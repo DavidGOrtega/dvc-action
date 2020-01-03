@@ -4,20 +4,22 @@ DVC is a great tool as a data versioning system, but also is great as a build to
 
 The action performs:
 
- - Generates a DVC report as a github check.
  - Automatic commit and push to git and dvc once the pipeline runs.
- - Generates an experiment release with metrics as changelog (COMING SOON).
+ - Generates a DVC report as a github check.
+ - Generates an experiment release with metrics as changelog.
 
 ## Input variables
 
 Variable | Required | Default | Info
 --- | --- | --- | ---
 github_token | yes |  | Is the github_token, this is normally setted automatically by github as a secret.
-dvc_repro_file | no | Dvcfile | If a file is given dvc will run the pipeline
-dvc_repro_skip | no | false | Skips reproducing the pipeline
+dvc_repro_file | no | Dvcfile | If a file is given dvc will run the pipeline. If None is given will skip the process
 
 ### [ci skip] support
 If your commit comment includes the tag the dvc action will skip returning a 0 status code (success). Github is only accepting 0 or 1 as status codes. Any value like 78 for neutral is invalid.
+
+### env variables
+Dvc remote is set using env variables [Working with DVC remotes].
 
 
 ## Usage
