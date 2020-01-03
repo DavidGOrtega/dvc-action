@@ -432,7 +432,7 @@ const create_release = async (opts) => {
 const run_action = async () => {
   try {
    
-    if (has_skip_ci()) return 0;
+    if (( await has_skip_ci() )) return 0;
 
     await install_dependencies();
     await init_remote();
