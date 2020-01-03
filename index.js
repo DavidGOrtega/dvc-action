@@ -444,10 +444,10 @@ const run_action = async () => {
     const is_pr = GITHUB_EVENT_NAME === 'pull_request';
 
     const from = await exe(is_pr ? `git log -n 1 origin/${GITHUB_HEAD_REF} --pretty=format:%H` 
-      : 'git rev-parse HEAD~1');
+      : github.context.payload.before);
     
     const to = await exe(is_pr ? `git log -n 1 origin/${GITHUB_BASE_REF} --pretty=format:%H` 
-      : 'git rev-parse HEAD');
+      : github.context.payload.after);
     
     const report = await check_dvc_report_summary({ from, to });
     await check_dvc_report({ summary: report });
