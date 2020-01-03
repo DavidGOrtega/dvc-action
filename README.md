@@ -19,7 +19,7 @@ dvc_repro_file | no | Dvcfile | If a file is given dvc will run the pipeline. If
 If your commit comment includes the tag the dvc action will skip returning a 0 status code (success). Github is only accepting 0 or 1 as status codes. Any value like 78 for neutral is invalid.
 
 ### env variables
-Dvc remote is set using env variables see [Working with DVC remotes](##Working-with-DVC-remotes).
+Dvc remote is set using env variables see [Working with DVC remotes](##working-with-DVC-remotes).
 
 
 ## Usage
