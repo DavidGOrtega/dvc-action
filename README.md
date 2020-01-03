@@ -8,20 +8,6 @@ The action performs:
  - Generates a DVC report as a github check.
  - Generates an experiment release with metrics as changelog.
 
-## Input variables
-
-Variable | Required | Default | Info
---- | --- | --- | ---
-github_token | yes |  | Is the github_token, this is normally setted automatically by github as a secret.
-dvc_repro_file | no | Dvcfile | If a file is given dvc will run the pipeline. If None is given will skip the process
-
-### [ci skip] support
-If your commit comment includes the tag the dvc action will skip returning a 0 status code (success). Github is only accepting 0 or 1 as status codes. Any value like 78 for neutral is invalid.
-
-### env variables
-Dvc remote is set using env variables see [Working with DVC remotes](##working-with-dvc-remotes).
-
-
 ## Usage
 
 This action depends on: 
@@ -59,6 +45,20 @@ jobs:
 
           
 ```
+
+## Input variables
+
+Variable | Required | Default | Info
+--- | --- | --- | ---
+github_token | yes |  | Is the github_token, this is normally setted automatically by github as a secret.
+dvc_repro_file | no | Dvcfile | If a file is given dvc will run the pipeline. If None is given will skip the process
+
+### [ci skip] support
+If your commit comment includes the tag the dvc action will skip returning a 0 status code (success). Github is only accepting 0 or 1 as status codes. Any value like 78 for neutral is invalid.
+
+### env variables
+Dvc remote is set using env variables see [Working with DVC remotes](##working-with-dvc-remotes).
+
 
 ## Working with DVC remotes
 
