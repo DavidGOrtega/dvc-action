@@ -20,7 +20,6 @@ const skip_ci = core.getInput('skip_ci');
 const {
   GITHUB_SHA,
   GITHUB_REPOSITORY,
-  GITHUB_EVENT_NAME,
   GITHUB_HEAD_REF,
   GITHUB_BASE_REF,
 } = process.env;
@@ -74,19 +73,12 @@ const uuid = () =>{
 }
 
 
-const dvc_report_data_md = async () => {
-  const { after } = github.context.payload;
-  
+const dvc_report_data_md = async (opts) => {
+  const { from, to } = opts;
   let summary = 'No data available';
 
   try {
-    let cmd = `dvc diff $(git rev-parse HEAD~1) $(git rev-parse HEAD)`;
-      
-    if ( GITHUB_EVENT_NAME === 'pull_request') {
-      cmd = `dvc diff $(git log -n 1 origin/${GITHUB_HEAD_REF} --pretty=format:%H) $(git log -n 1 origin/${GITHUB_BASE_REF} --pretty=format:%H)`;
-    }
-
-    const dvc_out = await exe(cmd);
+    const dvc_out = await exe(`dvc diff ${from} ${to}`);
 
     //1799 files untouched, 0 files modified, 1000 files added, 1 file deleted, size was increased by 23.0 MB
     const regex = /(\d+) files? untouched, (\d+) files? modified, (\d+) files? added, (\d+) files? deleted/g;
@@ -316,7 +308,7 @@ const init_remote = async () => {
   }
 
   // ssh
-  if(dvc_remote_list.includes('ssh://')) {
+  if(dvc_remote_list.toLowerCase().includes('ssh://')) {
     
     const { DVC_REMOTE_SSH_KEY } = process.env;
     if (DVC_REMOTE_SSH_KEY) {
@@ -330,15 +322,15 @@ const init_remote = async () => {
   }
 
   // HDFS
-  if(dvc_remote_list.includes('hdfs://')) {
+  if(dvc_remote_list.toLowerCase().includes('hdfs://')) {
     // TODO: implement
     console.log(`:warning: HDFS secrets not yet implemented`);
   }
 
   console.log('Pulling from dvc remote');
-  if (has_dvc_remote) {
+  /* if (has_dvc_remote) {
     await exe('dvc pull');
-  } 
+  }  */
 }
 
 
@@ -355,10 +347,11 @@ const run_repro = async () => {
     throw new Error(`DVC repro file ${dvc_repro_file} not found`);
 
   console.log(`echo Running dvc repro ${dvc_repro_file}`);
+  // TODO: try since dvc uses the stderr to WARNING: Dependency of changed because it is 'modified'. 
   try {
     await exe(`dvc repro ${dvc_repro_file}`);
   } catch (err) {
-    console.log(err.message); // TODO: dvc uses the stderr to WARNING: Dependency of changed because it is 'modified'. 
+    console.log(err.message); 
   }
   
   console.log('\n#############################################################################');
@@ -372,18 +365,18 @@ const run_repro = async () => {
     console.log('DVC commit');
     await exe('dvc commit -f');
 
-    const has_dvc_remote = await dvc_has_remote();
-    if (has_dvc_remote) {
-      console.log('DVC Push');
-      await exe('dvc push');
-    }
-
     console.log('Git commit');
     await exe(`
       git config --local user.email "action@github.com"
       git config --local user.name "GitHub Action"
       git commit -a -m "dvc repro ${skip_ci}"
     `);
+
+    const has_dvc_remote = await dvc_has_remote();
+    if (has_dvc_remote) {
+      console.log('DVC Push');
+      await exe('dvc push');
+    }
 
     console.log('Git push');
     await exe(`
@@ -447,7 +440,15 @@ const run_action = async () => {
 
     await run_repro();
 
-    const report = await check_dvc_report_summary();
+    const is_pr = GITHUB_EVENT_NAME === 'pull_request';
+
+    const from = await exe(is_pr ? `git log -n 1 origin/${GITHUB_HEAD_REF} --pretty=format:%H` 
+      : 'git rev-parse HEAD~1');
+    
+    const to = await exe(is_pr ? `git log -n 1 origin/${GITHUB_BASE_REF} --pretty=format:%H` 
+      : 'git rev-parse HEAD');
+    
+    const report = await check_dvc_report_summary({ from, to });
     await check_dvc_report({ summary: report });
     await create_release({ body: report });
   
