@@ -82,6 +82,8 @@ const dvc_report_data_md = async () => {
     let cmd = `dvc diff $(git rev-parse HEAD~1) $(git rev-parse HEAD)`;
       
     if ( GITHUB_EVENT_NAME === 'pull_request') {
+      await exe(`git diff $(git log -n 1 ${GITHUB_HEAD_REF} --pretty=format:%H) $(git log -n 1 ${GITHUB_BASE_REF} --pretty=format:%H)`);
+      
       cmd = `dvc diff $(git log -n 1 ${GITHUB_HEAD_REF} --pretty=format:%H) $(git log -n 1 ${GITHUB_BASE_REF} --pretty=format:%H)`;
     }
 
