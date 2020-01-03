@@ -7,6 +7,7 @@ const exec = util.promisify(require('child_process').exec)
 const fs = require('fs')
 const writeFile = util.promisify(fs.writeFile)
 const readFile = util.promisify(fs.readFile)
+const fsStat = util.promisify(fs.stat)
 
 const imgur = require('imgur')
 imgur.setClientId('9ae2688f25fae09');
@@ -44,107 +45,6 @@ const DVC_METRICS_DIFF_STUB = {
   }
 }
 
-const DVC_METRICS_STUB = `
-\tfile1.json:
-\t\t{
-\t\t  "$schema": "https://vega.github.io/schema/vega/v5.json",
-\t\t  "width": 500,
-\t\t  "height": 200,
-\t\t  "padding": 5
-\t\t}
-\tfile2.txt: stat2
-\tfile3.json:
-\t\t{
-\t\t  "$schema": "https://vega.github.io/schema/vega/v5.json",
-\t\t  "width": 500,
-\t\t  "height": 200,
-\t\t  "padding": 5
-\t\t}
-\tfile4.txt: stat4
-`;
-
-const VEGA_DATA = {
-  "$schema": "https://vega.github.io/schema/vega/v5.json",
-  "width": 500,
-  "height": 200,
-  "padding": 5,
-
-  "data": [
-    {
-      "name": "table",
-      "values": [
-        {"x": 0, "y": 28, "c": 0}, {"x": 0, "y": 55, "c": 1},
-        {"x": 1, "y": 43, "c": 0}, {"x": 1, "y": 91, "c": 1},
-        {"x": 2, "y": 81, "c": 0}, {"x": 2, "y": 53, "c": 1},
-        {"x": 3, "y": 19, "c": 0}, {"x": 3, "y": 87, "c": 1},
-        {"x": 4, "y": 52, "c": 0}, {"x": 4, "y": 48, "c": 1},
-        {"x": 5, "y": 24, "c": 0}, {"x": 5, "y": 49, "c": 1},
-        {"x": 6, "y": 87, "c": 0}, {"x": 6, "y": 66, "c": 1},
-        {"x": 7, "y": 17, "c": 0}, {"x": 7, "y": 27, "c": 1},
-        {"x": 8, "y": 68, "c": 0}, {"x": 8, "y": 16, "c": 1},
-        {"x": 9, "y": 49, "c": 0}, {"x": 9, "y": 15, "c": 1}
-      ],
-      "transform": [
-        {
-          "type": "stack",
-          "groupby": ["x"],
-          "sort": {"field": "c"},
-          "field": "y"
-        }
-      ]
-    }
-  ],
-
-  "scales": [
-    {
-      "name": "x",
-      "type": "band",
-      "range": "width",
-      "domain": {"data": "table", "field": "x"}
-    },
-    {
-      "name": "y",
-      "type": "linear",
-      "range": "height",
-      "nice": true, "zero": true,
-      "domain": {"data": "table", "field": "y1"}
-    },
-    {
-      "name": "color",
-      "type": "ordinal",
-      "range": "category",
-      "domain": {"data": "table", "field": "c"}
-    }
-  ],
-
-  "axes": [
-    {"orient": "bottom", "scale": "x", "zindex": 1},
-    {"orient": "left", "scale": "y", "zindex": 1}
-  ],
-
-  "marks": [
-    {
-      "type": "rect",
-      "from": {"data": "table"},
-      "encode": {
-        "enter": {
-          "x": {"scale": "x", "field": "x"},
-          "width": {"scale": "x", "band": 1, "offset": -1},
-          "y": {"scale": "y", "field": "y0"},
-          "y2": {"scale": "y", "field": "y1"},
-          "fill": {"scale": "color", "field": "c"}
-        },
-        "update": {
-          "fillOpacity": {"value": 1}
-        },
-        "hover": {
-          "fillOpacity": {"value": 0.5}
-        }
-      }
-    }
-  ]
-}
- 
 
 const exe = async (command) => {
   console.log(`\nCommand: ${command}`);
@@ -159,6 +59,10 @@ const exe = async (command) => {
   return stdout;
 }
 
+const dvc_has_remote = async() => {
+  return (await exe('dvc remote list')).length > 0;
+}
+
 
 const uuid = () =>{
   return new Date().getUTCMilliseconds()
@@ -166,28 +70,19 @@ const uuid = () =>{
 
 
 const dvc_report_data_md = async () => {
-  const { before, after } = github.context.payload;
+  const { after } = github.context.payload;
   
   let summary = 'No data available';
 
   try {
-    // TODO: extract file sizes and info from dcv changed files
-    // const git_out = await exe('git diff --name-only $(git rev-parse HEAD~1) $(git rev-parse HEAD)');
-
     let dvc_out;
-    try {
-      let cmd = `dvc diff $(git rev-parse HEAD~1) $(git rev-parse HEAD)`;
+    let cmd = `dvc diff $(git rev-parse HEAD~1) $(git rev-parse HEAD)`;
       
-      if (GITHUB_SHA != after) 
-        cmd = `dvc diff ${after} ${GITHUB_SHA}`;
+    //if (GITHUB_SHA != after) 
+      //cmd = `dvc diff ${after} ${GITHUB_SHA}`;
 
-      dvc_out = await exe(cmd);
+    const dvc_out = await exe(cmd);
 
-    } catch (err) {
-      // TODO: dvc support this
-      dvc_out = await exe('dvc diff 4b825dc642cb6eb9a060e54bf8d69288fbee4904 $(git rev-parse HEAD)');
-    }
-    
     //1799 files untouched, 0 files modified, 1000 files added, 1 file deleted, size was increased by 23.0 MB
     const regex = /(\d+) files? untouched, (\d+) files? modified, (\d+) files? added, (\d+) files? deleted/g;
     const match = regex.exec(dvc_out);
@@ -202,6 +97,7 @@ const dvc_report_data_md = async () => {
     sections.forEach(section => {
       summary += ` - ${section.lbl} files: ${section.total}  \n`;
 
+      // TODO: Replace this section with real output
       for (let i=0; i<section.total; i++)
         summary += `    - ${section.lbl}-dummy.png\t\t30Mb\n`;
     });
@@ -249,7 +145,7 @@ const dvc_report_metrics_diff_md = async () => {
 
 
 const vega2md = async (name, vega_data) => {
-  const vega = require('vega')
+  const vega = require('vega');
   
   const path = `./../${uuid()}.png`;
   const parsed = vega.parse(vega_data);
@@ -348,9 +244,35 @@ const has_skip_ci = async () => {
   return false;
 }
 
+
 const install_dependencies = async () => {
   console.log('installing dvc...')
   await exe('pip install dvc');
+}
+
+const init_remote = async () => {
+  // gs
+  const { GOOGLE_APPLICATION_CREDENTIALS } = process.env;
+  if (GOOGLE_APPLICATION_CREDENTIALS) {
+    const path = `./../GOOGLE_APPLICATION_CREDENTIALS.json`;
+    await writeFile(path, GDRIVE_USER_CREDENTIALS);
+    process.env['GOOGLE_APPLICATION_CREDENTIALS'] = path;
+  }
+   
+  // gdrive
+  const { GDRIVE_USER_CREDENTIALS } = process.env;
+  if (GDRIVE_USER_CREDENTIALS) {
+      const path = '.dvc/tmp/gdrive-user-credentials.json';
+      await writeFile(path, GDRIVE_USER_CREDENTIALS);
+  }
+
+  console.log('Pulling from dvc remote');
+  const has_dvc_remote = await dvc_has_remote();
+  if (has_dvc_remote) {
+    await exe('dvc pull -q');
+  } else {
+    console.log('Experiment does not have dvc remote!');
+  }
 }
 
 
@@ -366,17 +288,6 @@ const run_repro = async () => {
   if (!dvc_repro_file_exists) 
     throw new Error(`DVC repro file ${dvc_repro_file} not found`);
 
-
-  console.log('Pulling from dvc remote');
-  const has_dvc_remote = (await exe('dvc remote list')).length;
-  console.log(`has_dvc_remote length: ${(await exe('dvc remote list')).length}`);
-  if (has_dvc_remote) {
-    await exe('dvc pull -q');
-  } else {
-    console.log('Experiment does not have dvc remote!');
-  }
-
-
   console.log(`echo Running dvc repro ${dvc_repro_file}`);
   try {
     await exe(`dvc repro ${dvc_repro_file}`);
@@ -384,9 +295,9 @@ const run_repro = async () => {
     console.log(err.message); // TODO: dvc uses the stderr to WARNING: Dependency of changed because it is 'modified'. 
   }
   
-  console.log('\n\n\n\n#######');
+  console.log('\n#############################################################################');
   const xx = await exec(`! git diff-index --quiet HEAD --`);
-  console.log(xx);
+  console.log('#############################################################################');
 
   const has_changes = true; // TODO: if ! git diff-index --quiet HEAD --; then
   if (has_changes) {
@@ -394,6 +305,7 @@ const run_repro = async () => {
     console.log('DVC commit');
     await exe('dvc commit -f -q');
 
+    const has_dvc_remote = await dvc_has_remote();
     if (has_dvc_remote) {
       console.log('DVC Push');
       await exe('dvc push');
@@ -416,14 +328,14 @@ const run_repro = async () => {
 
 
 const octokit_upload_release_asset = async (url, filepath) => {
-  const stat = fs.statSync(filepath);
+  const stat = await fsStat(filepath);
 
   if (!stat.isFile()) {
       console.log(`Skipping, ${filepath} its not a file`);
       return;
   }
 
-  const file = fs.readFileSync(filepath);
+  const file = await readFile(filepath);
   const name = path.basename(filepath);
 
   await octokit.repos.uploadReleaseAsset({
@@ -461,9 +373,10 @@ const create_release = async (opts) => {
 const run_action = async () => {
   try {
    
-    //if (has_skip_ci()) return 0;
+    if (has_skip_ci()) return 0;
 
     await install_dependencies();
+    await init_remote();
 
     await run_repro();
 
