@@ -355,13 +355,11 @@ const run_repro = async () => {
     console.log(err.message); 
   }
   
-  console.log('\n#############################################################################');
-  const xx = await exec(`! git diff-index --quiet HEAD --`);
-  console.log('#############################################################################');
 
   // TODO: has_changes
-  const has_changes = true; 
-  if (has_changes) {
+  const git_changed = !(await exec(`git status`).contains('up to date'));
+  const dvc_changed = !(await exec(`dvc status -c`)).contains('up to date');
+  if (git_changed || dvc_changed) {
 
     console.log('DVC commit');
     await exe('dvc commit -f');
@@ -398,13 +396,15 @@ const octokit_upload_release_asset = async (url, filepath) => {
 
   const file = await readFile(filepath);
   const name = path.basename(filepath);
+  // TODO: mime type
+  const mime = "binary/octet-stream";
 
   await octokit.repos.uploadReleaseAsset({
       url,
       name,
       file,
       headers: {
-          "content-type": "binary/octet-stream",
+          "content-type": mime,
           "content-length": stat.size
       },
   });
