@@ -246,7 +246,7 @@ const has_skip_ci = async () => {
 
 const install_dependencies = async () => {
   console.log('installing dvc...')
-  await exe('pip install dvc[all]');
+  await exe('pip install --quiet dvc[all]');
 }
 
 const init_remote = async () => {
@@ -329,9 +329,9 @@ const init_remote = async () => {
   }
 
   console.log('Pulling from dvc remote');
-  /* if (has_dvc_remote) {
+  if (has_dvc_remote) {
     await exe('dvc pull');
-  }  */
+  }
 }
 
 
