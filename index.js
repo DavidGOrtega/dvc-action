@@ -329,7 +329,6 @@ const init_remote = async () => {
   }
 
   console.log('Pulling from dvc remote');
-  const has_dvc_remote = await dvc_has_remote();
   if (has_dvc_remote) {
     await exe('dvc pull -q');
   } 
