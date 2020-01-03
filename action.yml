@@ -9,10 +9,6 @@ inputs:
     required: false
     default: 'Dvcfile'
 
-  dvc_repro_skip:
-    required: false
-    default: false
-
   skip_ci: 
     required: false
     default: '[ci skip]'

@@ -17,8 +17,13 @@ const dvc_repro_file = core.getInput('dvc_repro_file');
 const files = core.getInput('files') || [];
 const skip_ci = core.getInput('skip_ci');
 
-const GITHUB_SHA = process.env.GITHUB_SHA;
-const GITHUB_REPOSITORY = process.env.GITHUB_REPOSITORY;
+const {
+  GITHUB_SHA,
+  GITHUB_REPOSITORY,
+  GITHUB_EVENT_NAME,
+  GITHUB_HEAD_REF,
+  GITHUB_BASE_REF,
+} = process.env;
 
 const STUB = process.env.STUB === 'true';
 
@@ -76,8 +81,9 @@ const dvc_report_data_md = async () => {
   try {
     let cmd = `dvc diff $(git rev-parse HEAD~1) $(git rev-parse HEAD)`;
       
-    //if (GITHUB_SHA != after) 
-      //cmd = `dvc diff ${after} ${GITHUB_SHA}`;
+    if ( GITHUB_EVENT_NAME === 'pull_request') {
+      cmd = `dvc diff $(git log -n 1 ${GITHUB_HEAD_REF} --pretty=format:%H) $(git log -n 1 ${GITHUB_BASE_REF} --pretty=format:%H)`;
+    }
 
     const dvc_out = await exe(cmd);
 
@@ -324,7 +330,7 @@ const init_remote = async () => {
   // HDFS
   if(dvc_remote_list.includes('hdfs://')) {
     // TODO: implement
-    console.log(`:warning: HDFS not yet implemented`);
+    console.log(`:warning: HDFS secrets not yet implemented`);
   }
 
   console.log('Pulling from dvc remote');
