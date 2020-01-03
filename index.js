@@ -210,6 +210,7 @@ const check_dvc_report_summary = async () => {
 }
 
 const check_dvc_report = async (opts) => {
+  console.log("Creating DVC report");
 
   const { summary } = opts;
 
