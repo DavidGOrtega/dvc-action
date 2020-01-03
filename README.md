@@ -4,21 +4,9 @@ DVC is a great tool as a data versioning system, but also is great as a build to
 
 The action performs:
 
- - Generates a DVC report as a github check.
  - Automatic commit and push to git and dvc once the pipeline runs.
- - Generates an experiment release with metrics as changelog (COMING SOON).
-
-## Input variables
-
-Variable | Required | Default | Info
---- | --- | --- | ---
-github_token | yes |  | Is the github_token, this is normally setted automatically by github as a secret.
-dvc_repro_file | no | Dvcfile | If a file is given dvc will run the pipeline
-dvc_repro_skip | no | false | Skips reproducing the pipeline
-
-### [ci skip] support
-If your commit comment includes the tag the dvc action will skip returning a 0 status code (success). Github is only accepting 0 or 1 as status codes. Any value like 78 for neutral is invalid.
-
+ - Generates a DVC report as a github check.
+ - Generates an experiment release with metrics as changelog.
 
 ## Usage
 
@@ -58,11 +46,25 @@ jobs:
           
 ```
 
+## Input variables
+
+Variable | Required | Default | Info
+--- | --- | --- | ---
+github_token | yes |  | Is the github_token, this is normally setted automatically by github as a secret.
+dvc_repro_file | no | Dvcfile | If a file is given dvc will run the pipeline. If None is given will skip the process
+
+### [ci skip] support
+If your commit comment includes the tag the dvc action will skip returning a 0 status code (success). Github is only accepting 0 or 1 as status codes. Any value like 78 for neutral is invalid.
+
+### env variables
+Dvc remote is set using env variables see [Working with DVC remotes](##working-with-dvc-remotes).
+
+
 ## Working with DVC remotes
 
 Dvc support different kinds of remote [storage](https://dvc.org/doc/command-reference/remote/add). 
 To setup them properely you have to setup credentials (if needed) as enviroment variables. We choose env variables and not inputs to be compatible with other github actions that set credentials like https://github.com/aws-actions/configure-aws-credentials.  
-Of course we recommend you to set those variables as [secrets](https://help.github.com/es/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets) to keep the safe.
+We recommend you to set those variables as [secrets](https://help.github.com/es/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets) to keep the safe.
 
 #### S3 and S3 compatible storage (Minio, DigitalOcean Spaces, IBM Cloud Object Storage...) 
 
