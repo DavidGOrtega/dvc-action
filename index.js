@@ -245,7 +245,7 @@ const has_skip_ci = async () => {
 
 const install_dependencies = async () => {
   console.log('installing dvc...')
-  await exe('pip install dvc');
+  await exe('pip install dvc[all]');
 }
 
 const init_remote = async () => {
@@ -357,7 +357,8 @@ const run_repro = async () => {
   const xx = await exec(`! git diff-index --quiet HEAD --`);
   console.log('#############################################################################');
 
-  const has_changes = true; // TODO: if ! git diff-index --quiet HEAD --; then
+  // TODO: has_changes
+  const has_changes = true; 
   if (has_changes) {
 
     console.log('DVC commit');
