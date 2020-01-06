@@ -364,8 +364,10 @@ const run_repro = async () => {
   
 
   // TODO: has_changes
-  const git_changed = !(await exec(`git status`)).includes('up to date');
-  const dvc_changed = !(await exec(`dvc status -c`)).includes('up to date');
+  const git_status = await exec(`git status`);
+  const git_changed = !git_status.includes('up to date');
+  const dvc_status = await exec(`dvc status -c`);
+  const dvc_changed = !dvc_status.includes('up to date');
   if (git_changed || dvc_changed) {
 
     console.log('DVC commit');
