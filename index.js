@@ -466,6 +466,7 @@ const run_action = async () => {
       : github.context.payload.after;
     
     const report = await check_dvc_report_summary({ from, to });
+    console.log(report);
     await check_dvc_report({ summary: report });
     await create_release({ body: report });
   
