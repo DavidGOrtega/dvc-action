@@ -196,7 +196,7 @@ const dvc_report_metrics_md = async () => {
 
   if (!summary.length || vega_summary.length)
     return 'No metrics available';
-    
+
   return `${summary} \n ${vega_summary}`;
 }
 
@@ -374,7 +374,8 @@ const run_repro = async () => {
   const git_changed = !git_status.includes('up to date');
   const dvc_status = await exe(`dvc status -c`);
   const dvc_changed = !dvc_status.includes('up to date');
-  if (git_changed || dvc_changed) {
+  if (false) {
+  //if (git_changed || dvc_changed) {
 
     console.log('DVC commit');
     await exe('dvc commit -f');
