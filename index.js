@@ -364,9 +364,9 @@ const run_repro = async () => {
   
 
   // TODO: has_changes
-  const git_status = await exec(`git status`);
+  const git_status = await exe(`git status`);
   const git_changed = !git_status.includes('up to date');
-  const dvc_status = await exec(`dvc status -c`);
+  const dvc_status = await exe(`dvc status -c`);
   const dvc_changed = !dvc_status.includes('up to date');
   if (git_changed || dvc_changed) {
 
