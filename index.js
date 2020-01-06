@@ -9,6 +9,8 @@ const writeFile = util.promisify(fs.writeFile)
 const readFile = util.promisify(fs.readFile)
 const fsStat = util.promisify(fs.stat)
 
+const vega = require('vega');
+const vegalite = require('vega-lite');
 const imgur = require('imgur')
 imgur.setClientId('9ae2688f25fae09');
 
@@ -142,20 +144,20 @@ const dvc_report_metrics_diff_md = async () => {
 }
 
 
-const vega2md = async (name, vega_data) => {
-  const vega = require('vega');
-  
-  const path = `./../${uuid()}.png`;
-  const parsed = vega.parse(vega_data);
-  const view = new vega.View(parsed, {renderer: 'none'});
+const vega2md = async (name, vega_json) => {
+  const is_vega_lite = vega_data['$schema'].contains('vega-lite');
+  const vega_data = is_vega_lite ? vegalite.compile(vega_json).spec : vega_json;
+  const view = new vega.View(vega.parse(vega_data), {renderer: 'none'});
 
   const canvas = await view.toCanvas();
 
-  await writeFile(path, canvas.toBuffer())
-
+  const path = `./../${uuid()}.png`;
+  await writeFile(path, canvas.toBuffer());
+  
   const imgur_resp = await imgur.uploadFile(path);
+  const image_uri = imgur_resp.data.link;
 
-  return `![${name}](${imgur_resp.data.link})`;
+  return `![${name}](${image_uri})`;
 }
 
 
