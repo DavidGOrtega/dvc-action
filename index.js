@@ -181,7 +181,8 @@ const dvc_report_metrics_md = async () => {
           try {
             vega_summary += (await vega2md(file, JSON.parse(content))) + '  \n';
           } catch(err) {
-            summary += `${content} \n`;
+            console.log(err);
+            //summary += `${content} \n`;
           }  
         }
       
