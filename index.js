@@ -153,7 +153,7 @@ const vega2md = async (name, vega_json) => {
 
   const path = `./../${uuid()}.png`;
   await writeFile(path, canvas.toBuffer());
-  
+
   const imgur_resp = await imgur.uploadFile(path);
   const image_uri = imgur_resp.data.link;
 
@@ -332,7 +332,12 @@ const init_remote = async () => {
 
   console.log('Pulling from dvc remote');
   if (has_dvc_remote) {
-    await exe('dvc pull');
+    // TODO: check if -f and try would be desirable
+    // projects with repro without push data previously fails
+    try {
+      await exe('dvc pull -f');
+    } catch (err) {}
+    
   }
 }
 
