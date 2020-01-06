@@ -162,13 +162,12 @@ const vega2md = async (name, vega_json) => {
 
 
 const dvc_report_metrics_md = async () => {
-  let summary = 'No metrics available';
+  let summary = '';
+  let vega_summary = '';
 
   try {
     const dvc_out = await exe('dvc metrics show');
 
-    summary = "```\n" + dvc_out + "\n```\n";
-    
     const regex = /.+?:/gm;
     const matches = dvc_out.match(regex);
 
@@ -179,11 +178,15 @@ const dvc_report_metrics_md = async () => {
         if (!file.includes('"')) {
           const content = await readFile(file, "utf8");
 
-          summary += (await vega2md(file, JSON.parse(content))) + '  \n';
+          try {
+            vega_summary += (await vega2md(file, JSON.parse(content))) + '  \n';
+          } catch(err) {
+            summary += `${content} \n`;
+          }  
         }
       
       } catch(err) {
-        console.log(``);
+        console.log(err);
       }
     }
   
@@ -191,7 +194,10 @@ const dvc_report_metrics_md = async () => {
     console.error(err);
   }
 
-  return summary;
+  if (!summary.length || vega_summary.length)
+    return 'No metrics available';
+    
+  return `${summary} \n ${vega_summary}`;
 }
 
 
