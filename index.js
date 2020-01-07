@@ -189,7 +189,7 @@ const dvc_report_metrics_md = async () => {
               summary += `\n ${json_2_mdtable(json_parsed)} \n`;
             
             } else
-              summary += `${content} \n`;
+              summary += `\`\`\`${content}\`\`\` \n`;
           }  
         }
       
@@ -205,7 +205,7 @@ const dvc_report_metrics_md = async () => {
   if (!summary.length)
     return 'No metrics available';
 
-  return `${summary} \n ${vega_summary}`;
+  return `${summary} \n`;
 }
 
 
