@@ -145,7 +145,7 @@ const dvc_report_metrics_diff_md = async () => {
 
 
 const vega2md = async (name, vega_json) => {
-  const is_vega_lite = vega_json['$schema'].contains('vega-lite');
+  const is_vega_lite = vega_json['$schema'].includes('vega-lite');
   const vega_data = is_vega_lite ? vegalite.compile(vega_json).spec : vega_json;
   const view = new vega.View(vega.parse(vega_data), {renderer: 'none'});
 
