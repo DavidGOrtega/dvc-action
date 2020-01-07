@@ -183,11 +183,9 @@ const dvc_report_metrics_md = async () => {
           const content = await readFile(file, "utf8");
 
           try {
-            console.log(`trying ${file}`);
             vega_summary += (await vega2md(file, JSON.parse(content))) + '  \n';
           } catch(err) {
-            console.log(err);
-            //summary += `${content} \n`;
+            summary += `${content} \n`;
           }  
         }
       
@@ -200,7 +198,7 @@ const dvc_report_metrics_md = async () => {
     console.error(err);
   }
 
-  if (!summary.length || vega_summary.length)
+  if (!summary.length && !vega_summary.length)
     return 'No metrics available';
 
   return `${summary} \n ${vega_summary}`;
