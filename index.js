@@ -11,6 +11,7 @@ const fsStat = util.promisify(fs.stat)
 
 const vega = require('vega');
 const vegalite = require('vega-lite');
+const json_2_mdtable =require('json-to-markdown-table2');
 const imgur = require('imgur')
 imgur.setClientId('9ae2688f25fae09');
 
@@ -181,11 +182,15 @@ const dvc_report_metrics_md = async () => {
       try {
         if (!file.includes('"')) {
           const content = await readFile(file, "utf8");
+          const json_parsed = JSON.parse(content);
 
           try {
-            vega_summary += (await vega2md(file, JSON.parse(content))) + '  \n';
+            vega_summary += (await vega2md(file, json_parsed)) + '  \n';
           } catch(err) {
-            summary += `${content} \n`;
+            if (json_parsed)
+              summary += `${json_2_mdtable(json_parsed)} \n`;
+            else
+              summary += `${content} \n`;
           }  
         }
       
