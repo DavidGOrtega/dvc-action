@@ -381,10 +381,12 @@ const run_repro = async () => {
     console.log('DVC commit');
     await exe('dvc commit -f');
 
+    // TODO: review git add --all required because of metrics files. Should it not be tracked by dvc?
     console.log('Git commit');
     await exe(`
       git config --local user.email "action@github.com"
       git config --local user.name "GitHub Action"
+      git add --all
       git commit -a -m "dvc repro ${skip_ci}"
     `);
 
