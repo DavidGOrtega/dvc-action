@@ -166,7 +166,6 @@ const vega2md = async (name, vega_json) => {
 
 const dvc_report_metrics_md = async () => {
   let summary = '';
-  let vega_summary = '';
 
   try {
     const quiet = true;
@@ -184,10 +183,9 @@ const dvc_report_metrics_md = async () => {
           const json_parsed = JSON.parse(content);
 
           try {
-            vega_summary += (await vega2md(file, json_parsed)) + '  \n';
+              summary += (await vega2md(file, json_parsed)) + '  \n';
           } catch(err) {
             if (json_parsed) {
-              console.log(`\n\n\n\t\t${json_2_mdtable(json_parsed)}`);
               summary += `\n ${json_2_mdtable(json_parsed)} \n`;
             
             } else
@@ -204,7 +202,7 @@ const dvc_report_metrics_md = async () => {
     console.error(err);
   }
 
-  if (!summary.length && !vega_summary.length)
+  if (!summary.length)
     return 'No metrics available';
 
   return `${summary} \n ${vega_summary}`;
