@@ -188,7 +188,7 @@ const dvc_report_metrics_md = async () => {
           } catch(err) {
             if (json_parsed) {
               console.log(`\n\n\n\t\t${json_2_mdtable(json_parsed)}`);
-              summary += `${json_2_mdtable(json_parsed)} \n`;
+              summary += `\n ${json_2_mdtable(json_parsed)} \n`;
             
             } else
               summary += `${content} \n`;
@@ -379,11 +379,12 @@ const run_repro = async () => {
     console.log(err.message); 
   }
   
+  // TODO: review, dvc lock changes for git
   const git_status = await exe(`git status`);
   const git_changed = !git_status.includes('up to date');
   const dvc_status = await exe(`dvc status -c`);
   const dvc_changed = !dvc_status.includes('up to date');
-  if (git_changed || dvc_changed) {
+  if (/*git_changed ||*/ dvc_changed) {
 
     console.log('DVC commit');
     await exe('dvc commit -f');
