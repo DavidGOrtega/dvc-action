@@ -152,8 +152,8 @@ const vega2md = async (name, vega_json) => {
 
   const canvas = await view.toCanvas();
 
-  console.log(path);
   const path = `./../${uuid()}.png`;
+  console.log(path);
   await writeFile(path, canvas.toBuffer());
 
   console.log("uploading imgur");
