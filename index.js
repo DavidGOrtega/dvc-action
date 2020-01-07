@@ -53,13 +53,15 @@ const DVC_METRICS_DIFF_STUB = {
 }
 
 
-const exe = async (command) => {
+const exe = async (command, quiet) => {
   const { stdout, stderr, error } = await exec(command);
 
-  console.log(`\nCommand: ${command}`);
-  console.log(`\t\t${stdout}`);
-  console.log(`\t\t${stderr}`);
-  
+  if (!quiet) {
+    console.log(`\nCommand: ${command}`);
+    console.log(`\t\t${stdout}`);
+    console.log(`\t\t${stderr}`);
+  }
+   
   if (error) throw new Error(stderr);
 
   return stdout;
@@ -153,13 +155,10 @@ const vega2md = async (name, vega_json) => {
   const canvas = await view.toCanvas();
 
   const path = `./../${uuid()}.png`;
-  console.log(path);
   await writeFile(path, canvas.toBuffer());
 
-  console.log("uploading imgur");
   const imgur_resp = await imgur.uploadFile(path);
   const image_uri = imgur_resp.data.link;
-  console.log(image_uri);
 
   return `![${name}](${image_uri})`;
 }
@@ -170,7 +169,8 @@ const dvc_report_metrics_md = async () => {
   let vega_summary = '';
 
   try {
-    const dvc_out = await exe('dvc metrics show');
+    const quiet = true;
+    const dvc_out = await exe('dvc metrics show', quiet);
 
     const regex = /.+?:/gm;
     const matches = dvc_out.match(regex);
@@ -372,14 +372,11 @@ const run_repro = async () => {
     console.log(err.message); 
   }
   
-
-  // TODO: has_changes
   const git_status = await exe(`git status`);
   const git_changed = !git_status.includes('up to date');
   const dvc_status = await exe(`dvc status -c`);
   const dvc_changed = !dvc_status.includes('up to date');
-  if (false) {
-  //if (git_changed || dvc_changed) {
+  if (git_changed || dvc_changed) {
 
     console.log('DVC commit');
     await exe('dvc commit -f');
