@@ -360,7 +360,8 @@ const init_remote = async () => {
 
 
 const run_repro = async () => {
-  
+  let repro_runned = false;
+
   if (dvc_repro_file === 'None') {
     console.log('DVC repro skipped');
     return;
@@ -410,8 +411,10 @@ const run_repro = async () => {
       git push github HEAD:$GITHUB_REF
     `);
 
-
+    repro_runned = true;
   }
+
+  return repro_runned;
 }
 
 
@@ -468,7 +471,7 @@ const run_action = async () => {
     await install_dependencies();
     await init_remote();
 
-    await run_repro();
+    const repro_runned = await run_repro();
 
     const is_pr = GITHUB_EVENT_NAME === 'pull_request';
 
@@ -480,7 +483,9 @@ const run_action = async () => {
     
     const report = await check_dvc_report_summary({ from, to });
     await check_dvc_report({ summary: report });
-    await create_release({ body: report });
+
+    if (repro_runned)
+      await create_release({ body: report });
   
   } catch (error) {
     core.setFailed(error.message);
