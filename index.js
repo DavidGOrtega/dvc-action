@@ -145,6 +145,7 @@ const dvc_report_metrics_diff_md = async () => {
 
 
 const vega2md = async (name, vega_json) => {
+  console.log(vega_json);
   const is_vega_lite = vega_json['$schema'].includes('vega-lite');
   const vega_data = is_vega_lite ? vegalite.compile(vega_json).spec : vega_json;
   const view = new vega.View(vega.parse(vega_data), {renderer: 'none'});
@@ -179,6 +180,7 @@ const dvc_report_metrics_md = async () => {
           const content = await readFile(file, "utf8");
 
           try {
+            console.log(`trying ${file}`);
             vega_summary += (await vega2md(file, JSON.parse(content))) + '  \n';
           } catch(err) {
             console.log(err);
