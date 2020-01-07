@@ -148,7 +148,6 @@ const dvc_report_metrics_diff_md = async () => {
 
 
 const vega2md = async (name, vega_json) => {
-  console.log(vega_json);
   const is_vega_lite = vega_json['$schema'].includes('vega-lite');
   const vega_data = is_vega_lite ? vegalite.compile(vega_json).spec : vega_json;
   const view = new vega.View(vega.parse(vega_data), {renderer: 'none'});
@@ -263,7 +262,7 @@ const has_skip_ci = async () => {
 
 const install_dependencies = async () => {
   console.log('installing dvc...');
-  await exe('pip uninstall enum34');
+  // await exe('pip uninstall enum34');
   await exe('pip install --quiet dvc[all]');
 }
 
@@ -407,6 +406,8 @@ const run_repro = async () => {
       git remote add github "https://$GITHUB_ACTOR:${github_token}@github.com/$GITHUB_REPOSITORY.git"
       git push github HEAD:$GITHUB_REF
     `);
+
+
   }
 }
 
@@ -475,7 +476,6 @@ const run_action = async () => {
       : github.context.payload.after;
     
     const report = await check_dvc_report_summary({ from, to });
-    console.log(report);
     await check_dvc_report({ summary: report });
     await create_release({ body: report });
   
