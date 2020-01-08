@@ -128,3 +128,49 @@ After configuring your [Google Drive credentials](https://dvc.org/doc/command-re
 ```
 
 
+## Metrics
+
+One of the ... [Dvc can help you tracking metrics](https://dvc.org/doc/command-reference/metrics). However dvc-action has been extended to support special metrics in the form of json. These metrics are available in the DVC Report as a Github check or in the Release.
+
+### Common metrics
+They are not json metrics and they will be displayed as a code block
+
+```
+accuracy 92.4
+```
+
+### Json metrics
+Any json object will be transformed into a table.
+
+```json
+{ "batch_size": 128, "num_steps": 2000, "learning_rate": 0.05, "took": 0.004629 }
+```
+
+|batch_size|num_steps|learning_rate|took|
+|----|----|----|----|
+|128|2000|0.05|0.004629| 
+
+### Json Vega and Vega-lite metrics
+
+Vega and Vega-lite are visualization grammars that are widely used. 
+
+```json
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
+  "description": "Google's stock price over time.",
+  "data": {"values": [
+      {"x": 100, "y": 50},
+      {"x": 150, "y": 100},
+      {"x": 200, "y": 70},
+      {"x": 250, "y": 90}
+  ]},
+  "mark": "line",
+  "encoding": {
+    "x": {"field": "x", "type": "quantitative"},
+    "y": {"field": "y", "type": "quantitative"}
+  }
+}
+```
+
+![https://i.imgur.com/fhWKHZm.png](https://i.imgur.com/fhWKHZm.png)
+
