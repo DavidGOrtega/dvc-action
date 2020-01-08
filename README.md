@@ -132,7 +132,7 @@ After configuring your [Google Drive credentials](https://dvc.org/doc/command-re
 
 ## DVC Metrics
 
-One of the things that DVC can help you with are [metrics](https://dvc.org/doc/command-reference/metrics). Dvc-action has been extended to support metrics in the form of json. Dvc metrics will be displayed in the Dvc-actin Report in the form of as a Github check or in the Dvc-action automatic release text.
+One of the things that DVC can help you with are [metrics](https://dvc.org/doc/command-reference/metrics). Dvc-action has been extended to support metrics in the form of json. Dvc metrics will be displayed in the DVC Report (as a Github check or in the Dvc-action automatic release text).
 
 ### Common metrics
 They are not json metrics and they will be displayed as a code block
