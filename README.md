@@ -4,15 +4,17 @@ DVC is a great tool as a data versioning system, but also is great as a build to
 
 The action performs:
 
- - Automatic commit and push to git and dvc once the pipeline runs.
- - Generates a DVC report as a github check.
- - Generates an experiment release with metrics as changelog.
+ 1. Dvc repro 
+ 2. Push changes into dvc remote and git remote
+ 3. Generates a DVC Report as a github check displaying all the experiment metrics
+ 4. Generates a Relase with desired files and Dvc Report as a "changelog"
+ 
 
 ## Usage
 
 This action depends on: 
  - actions/checkout
- - actions/setup-python.
+ - actions/setup-python
 
 Simple example of your workflow with DVC action:
 
@@ -41,19 +43,19 @@ jobs:
           
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-          
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 
 ```
 
 ## Input variables
 
-Variable | Required | Default | Info
---- | --- | --- | ---
-github_token | yes |  | Is the github_token, this is normally setted automatically by github as a secret.
-dvc_repro_file | no | Dvcfile | If a file is given dvc will run the pipeline. If None is given will skip the process
+Variable | Type | Required | Default | Info
+--- | --- | --- | --- | ---
+github_token | string | yes |  | Is the github_token, this is setted automatically by Github as a secret.
+dvc_repro_file | string | no | Dvcfile | If a file is given dvc will run the pipeline. If None is given will skip the process
+release_skip | boolean | no | true | If set skips generating a release
+release_files | array | no | [] | Add all the given files to the release
 
-### [ci skip] support
+### Support for [ci skip] comment
 If your commit comment includes the tag the dvc action will skip returning a 0 status code (success). Github is only accepting 0 or 1 as status codes. Any value like 78 for neutral is invalid.
 
 ### env variables
@@ -63,8 +65,8 @@ Dvc remote is set using env variables see [Working with DVC remotes](##working-w
 ## Working with DVC remotes
 
 Dvc support different kinds of remote [storage](https://dvc.org/doc/command-reference/remote/add). 
-To setup them properely you have to setup credentials (if needed) as enviroment variables. We choose env variables and not inputs to be compatible with other github actions that set credentials like https://github.com/aws-actions/configure-aws-credentials.  
-We recommend you to set those variables as [secrets](https://help.github.com/es/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets) to keep the safe.
+To setup them properly you have to setup credentials (if needed) as enviroment variables. We choose env variables and not inputs to be compatible with other github actions that set credentials like https://github.com/aws-actions/configure-aws-credentials.  
+We recommend you to set those variables as [secrets](https://help.github.com/es/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets) to keep them secure.
 
 #### S3 and S3 compatible storage (Minio, DigitalOcean Spaces, IBM Cloud Object Storage...) 
 
@@ -128,3 +130,51 @@ After configuring your [Google Drive credentials](https://dvc.org/doc/command-re
 ```
 
 
+## DVC Metrics
+
+One of the things that DVC can help you with are [metrics](https://dvc.org/doc/command-reference/metrics). Dvc-action has been extended to support metrics in the form of json. Dvc metrics will be displayed in the DVC Report (as a Github check or in the Dvc-action automatic release text).
+
+### Common metrics
+They are not json metrics and they will be displayed as a code block
+
+```
+accuracy 92.4
+```
+
+### Json metrics
+Any json object will be transformed into a table.
+
+```json
+{ "batch_size": 128, "num_steps": 2000, "learning_rate": 0.05, "took": 0.004629 }
+```
+
+|batch_size|num_steps|learning_rate|took|
+|----|----|----|----|
+|128|2000|0.05|0.004629| 
+
+### Json Vega and Vega-lite metrics
+
+Vega and Vega-lite are visualization grammars that are widely used. 
+
+```json
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
+  "data": {"values": [
+      {"x": 100, "y": 50},
+      {"x": 150, "y": 100},
+      {"x": 200, "y": 70},
+      {"x": 250, "y": 90}
+  ]},
+  "mark": "line",
+  "encoding": {
+    "x": {"field": "x", "type": "quantitative"},
+    "y": {"field": "y", "type": "quantitative"}
+  }
+}
+```
+
+![https://i.imgur.com/fhWKHZm.png](https://i.imgur.com/fhWKHZm.png)
+
+
+## Examples
+ - [Tensorflow Mnist](https://github.com/DavidGOrtega/dvc-action/wiki/Tensorflow-Mnist)
