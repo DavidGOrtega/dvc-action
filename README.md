@@ -4,9 +4,11 @@ DVC is a great tool as a data versioning system, but also is great as a build to
 
 The action performs:
 
- - Automatic commit and push to git and dvc once the pipeline runs.
- - Generates a DVC report as a github check.
- - Generates an experiment release with metrics as changelog.
+ 1. Dvc repro 
+ 2. Push changes into dvc remote and git remote
+ 3. Generates a DVC Report as a github check displaying all the experiment metrics
+ 4. Generates a Relase with desired files and Dvc Report as a "changelog"
+ 
 
 ## Usage
 
@@ -48,12 +50,14 @@ jobs:
 
 ## Input variables
 
-Variable | Required | Default | Info
---- | --- | --- | ---
-github_token | yes |  | Is the github_token, this is normally setted automatically by github as a secret.
-dvc_repro_file | no | Dvcfile | If a file is given dvc will run the pipeline. If None is given will skip the process
+Variable | Type | Required | Default | Info
+--- | --- | --- | --- | ---
+github_token | string | yes |  | Is the github_token, this is setted automatically by Github as a secret.
+dvc_repro_file | string | no | Dvcfile | If a file is given dvc will run the pipeline. If None is given will skip the process
+release_skip | boolean | no | true | If set skips generating a release
+release_files | array | no | [] | Add all the given files to the release
 
-### [ci skip] support
+### Support for [ci skip] comment
 If your commit comment includes the tag the dvc action will skip returning a 0 status code (success). Github is only accepting 0 or 1 as status codes. Any value like 78 for neutral is invalid.
 
 ### env variables
@@ -128,9 +132,9 @@ After configuring your [Google Drive credentials](https://dvc.org/doc/command-re
 ```
 
 
-## Metrics
+## DVC Metrics
 
-One of the ... [Dvc can help you tracking metrics](https://dvc.org/doc/command-reference/metrics). However dvc-action has been extended to support special metrics in the form of json. These metrics are available in the DVC Report as a Github check or in the Release.
+One of the things that [DVC can help you with are metrics](https://dvc.org/doc/command-reference/metrics). Dvc-action has been extended to support metrics in the form of json. Dvc metrics will be displayed in the Dvc-actin Report in the form of as a Github check or in the Dvc-action automatic release text.
 
 ### Common metrics
 They are not json metrics and they will be displayed as a code block
