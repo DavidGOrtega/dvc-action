@@ -14,7 +14,7 @@ The action performs:
 
 This action depends on: 
  - actions/checkout
- - actions/setup-python.
+ - actions/setup-python
 
 Simple example of your workflow with DVC action:
 
