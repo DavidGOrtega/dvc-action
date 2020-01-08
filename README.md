@@ -157,7 +157,6 @@ Vega and Vega-lite are visualization grammars that are widely used.
 ```json
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
-  "description": "Google's stock price over time.",
   "data": {"values": [
       {"x": 100, "y": 50},
       {"x": 150, "y": 100},
