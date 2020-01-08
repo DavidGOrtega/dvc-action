@@ -486,12 +486,7 @@ const run_action = async () => {
       : github.context.payload.before;
     
     let to = is_pr ? await exe(`git log -n 1 origin/${GITHUB_BASE_REF} --pretty=format:%H`) 
-      : github.context.payload.after;
-
-    if (!is_pr && repro_runned) {
-      from = github.context.payload.after; 
-      to = await exe(`git rev-parse HEAD`); 
-    }
+      : await exe(`git rev-parse HEAD`);
 
     const report = await check_dvc_report_summary({ from, to });
     await check_dvc_report({ summary: report });

@@ -9,6 +9,14 @@ inputs:
     required: false
     default: 'Dvcfile'
 
+  release_skip: 
+    required: false
+    default: false
+
+  release_files: 
+    required: false
+    default: []
+
   skip_ci: 
     required: false
     default: '[ci skip]'
