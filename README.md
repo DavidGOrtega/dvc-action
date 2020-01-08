@@ -43,9 +43,7 @@ jobs:
           
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-          
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 
 ```
 
 ## Input variables
@@ -67,8 +65,8 @@ Dvc remote is set using env variables see [Working with DVC remotes](##working-w
 ## Working with DVC remotes
 
 Dvc support different kinds of remote [storage](https://dvc.org/doc/command-reference/remote/add). 
-To setup them properely you have to setup credentials (if needed) as enviroment variables. We choose env variables and not inputs to be compatible with other github actions that set credentials like https://github.com/aws-actions/configure-aws-credentials.  
-We recommend you to set those variables as [secrets](https://help.github.com/es/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets) to keep the safe.
+To setup them properly you have to setup credentials (if needed) as enviroment variables. We choose env variables and not inputs to be compatible with other github actions that set credentials like https://github.com/aws-actions/configure-aws-credentials.  
+We recommend you to set those variables as [secrets](https://help.github.com/es/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets) to keep them secure.
 
 #### S3 and S3 compatible storage (Minio, DigitalOcean Spaces, IBM Cloud Object Storage...) 
 
@@ -134,7 +132,7 @@ After configuring your [Google Drive credentials](https://dvc.org/doc/command-re
 
 ## DVC Metrics
 
-One of the things that [DVC can help you with are metrics](https://dvc.org/doc/command-reference/metrics). Dvc-action has been extended to support metrics in the form of json. Dvc metrics will be displayed in the Dvc-actin Report in the form of as a Github check or in the Dvc-action automatic release text.
+One of the things that DVC can help you with are [metrics](https://dvc.org/doc/command-reference/metrics). Dvc-action has been extended to support metrics in the form of json. Dvc metrics will be displayed in the Dvc-actin Report in the form of as a Github check or in the Dvc-action automatic release text.
 
 ### Common metrics
 They are not json metrics and they will be displayed as a code block
