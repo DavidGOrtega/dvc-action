@@ -17,7 +17,8 @@ imgur.setClientId('9ae2688f25fae09');
 
 const github_token = core.getInput('github_token');
 const dvc_repro_file = core.getInput('dvc_repro_file');
-const files = core.getInput('files') || [];
+const release_skip = core.getInput('release_skip')  === 'true';
+const release_files = core.getInput('release_files') || [];
 const skip_ci = core.getInput('skip_ci');
 
 const {
@@ -269,7 +270,8 @@ const has_skip_ci = async () => {
 
 const install_dependencies = async () => {
   console.log('installing dvc...');
-  await exe('pip uninstall -y enum34');
+  // TODO: re view stuck 
+  //await exe('pip uninstall -y enum34');
   await exe('pip install --quiet dvc[all]');
 }
 
@@ -463,8 +465,8 @@ const create_release = async (opts) => {
   });
 
   // TODO: promisify all
-  for (idx in files) {
-    await octokit_upload_release_asset(release.data.upload_url, files[idx]);
+  for (idx in release_files) {
+    await octokit_upload_release_asset(release.data.upload_url, release_files[idx]);
   }
 }
 
@@ -486,13 +488,15 @@ const run_action = async () => {
     let to = is_pr ? await exe(`git log -n 1 origin/${GITHUB_BASE_REF} --pretty=format:%H`) 
       : github.context.payload.after;
 
-    if (!is_pr && repro_runned) 
-      to = await exe(`git log -n 1 origin/${GITHUB_BASE_REF} --pretty=format:%H`); 
+    if (!is_pr && repro_runned) {
+      from = github.context.payload.after; 
+      to = await exe(`git rev-parse HEAD`); 
+    }
 
     const report = await check_dvc_report_summary({ from, to });
     await check_dvc_report({ summary: report });
 
-    if (repro_runned)
+    if (!release_skip && repro_runned)
       await create_release({ body: report });
   
   } catch (error) {
