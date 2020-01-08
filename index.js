@@ -102,7 +102,7 @@ const dvc_report_data_md = async (opts) => {
 
       // TODO: Replace this section with real output
       for (let i=0; i<section.total; i++)
-        summary += `    - ${section.lbl}-dummy.png\t\t30Mb\n`;
+      summary += `    - file${i}\t\tMb\n`;
     });
 
   } catch (err) {
@@ -183,13 +183,13 @@ const dvc_report_metrics_md = async () => {
           const json_parsed = JSON.parse(content);
 
           try {
-              summary += (await vega2md(file, json_parsed)) + '  \n';
+              summary += `\n ${(await vega2md(file, json_parsed))} \n`;
           } catch(err) {
             if (json_parsed) {
               summary += `\n ${json_2_mdtable(json_parsed)} \n`;
             
             } else
-              summary += `\`\`\`${content}\`\`\` \n`;
+              summary += `\n \`\`\`${content}\`\`\` \n`;
           }  
         }
       
@@ -214,7 +214,14 @@ const check_dvc_report_summary = async (opts) => {
   const metrics_diff = await dvc_report_metrics_diff_md(opts);
   const metrics_vega = await dvc_report_metrics_md();
 
-  const summary = `### Data  \n${data}  \n### Metrics  \n ${metrics_diff} \n${metrics_vega}`;
+  const summary = 
+  `### Data  \n
+  ${data}  
+  
+  ### Metrics  \n
+  ${metrics_diff}  \n
+  
+  ${metrics_vega}`;
 
   return summary;
 }
@@ -262,7 +269,7 @@ const has_skip_ci = async () => {
 
 const install_dependencies = async () => {
   console.log('installing dvc...');
-  // await exe('pip uninstall enum34');
+  await exe('pip uninstall -y enum34');
   await exe('pip install --quiet dvc[all]');
 }
 
@@ -473,12 +480,15 @@ const run_action = async () => {
 
     const is_pr = GITHUB_EVENT_NAME === 'pull_request';
 
-    const from = is_pr ? await exe(`git log -n 1 origin/${GITHUB_HEAD_REF} --pretty=format:%H`) 
+    let from = is_pr ? await exe(`git log -n 1 origin/${GITHUB_HEAD_REF} --pretty=format:%H`) 
       : github.context.payload.before;
     
-    const to = is_pr ? await exe(`git log -n 1 origin/${GITHUB_BASE_REF} --pretty=format:%H`) 
+    let to = is_pr ? await exe(`git log -n 1 origin/${GITHUB_BASE_REF} --pretty=format:%H`) 
       : github.context.payload.after;
-    
+
+    if (!is_pr && repro_runned) 
+      to = await exe(`git log -n 1 origin/${GITHUB_BASE_REF} --pretty=format:%H`); 
+
     const report = await check_dvc_report_summary({ from, to });
     await check_dvc_report({ summary: report });
 
