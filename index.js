@@ -474,7 +474,7 @@ const run_action = async () => {
    
     const is_pr = GITHUB_EVENT_NAME === 'pull_request';
 
-    if (( await has_skip_ci() || is_pr )) return 0;
+    if (( await has_skip_ci() || is_pr )) return;
 
     await install_dependencies();
     await init_remote();
