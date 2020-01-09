@@ -416,7 +416,7 @@ const run_repro = async () => {
     try {
     await exe(`
       git remote add github "https://$GITHUB_ACTOR:${github_token}@github.com/$GITHUB_REPOSITORY.git"
-      git push github HEAD:$GITHUB_REF
+      git push github HEAD:$GITHUB_HEAD_REF
     `);
     }catch (err) {}
 
