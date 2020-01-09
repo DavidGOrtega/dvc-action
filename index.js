@@ -27,9 +27,9 @@ const {
   GITHUB_HEAD_REF,
   GITHUB_BASE_REF,
   GITHUB_EVENT_NAME,
-  GITHUB_ACTOR,
 } = process.env;
 
+const IS_PR = GITHUB_EVENT_NAME === 'pull_request';
 const STUB = process.env.STUB === 'true';
 
 const [owner, repo] = GITHUB_REPOSITORY.split('/');
@@ -273,7 +273,6 @@ const install_dependencies = async () => {
   await exe('pip uninstall -y enum34');
 
   await exe('pip install --quiet dvc[all]');
-  await exe('pip install --quiet dvc[all]');
 }
 
 const init_remote = async () => {
@@ -400,33 +399,29 @@ const run_repro = async () => {
 
     // TODO: review git add --all required because of metrics files. Should it not be tracked by dvc?
     console.log('Git commit');
-    /* await exe(`
+    await exe(`
       git config --local user.email "action@github.com"
       git config --local user.name "GitHub Action"
       git add --all
       git commit -a -m "dvc repro ${skip_ci}"
     `);
- */
-    await exe(`
-    git config --global user.name '${GITHUB_ACTOR}' 
-    git config --global user.email '${GITHUB_ACTOR}@users.noreply.github.com' 
-    git add -A && git commit -m 'dvc repro ${skip_ci}' --allow-empty 
-    git push -u origin HEAD
-    `);
+
     const has_dvc_remote = await dvc_has_remote();
     if (has_dvc_remote) {
       console.log('DVC Push');
       await exe('dvc push');
     }
 
-    /* console.log('Git push');
+    console.log('Git push');
     try {
     await exe(`
       git remote add github "https://$GITHUB_ACTOR:${github_token}@github.com/$GITHUB_REPOSITORY.git"
       git push github HEAD:$GITHUB_REF
     `);
     }catch (err) {}
- */
+
+
+    //git push github HEAD:$GITHUB_REF
     // git push github HEAD:$GITHUB_HEAD_REF
     repro_runned = true;
   }
@@ -496,7 +491,7 @@ const run_action = async () => {
 
     await install_dependencies();
 
-    // await exe(`git checkout ${GITHUB_HEAD_REF} && dvc checkout -q`);
+    await exe(`git checkout ${GITHUB_HEAD_REF} && dvc checkout`);
 
     await init_remote();
 
