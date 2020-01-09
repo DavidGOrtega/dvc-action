@@ -483,6 +483,10 @@ const run_action = async () => {
 
     let from = is_pr ? await exe(`git log -n 1 origin/${GITHUB_HEAD_REF} --pretty=format:%H`) 
       : github.context.payload.before;
+
+
+    if (from === '0000000000000000000000000000000000000000')
+          from = await exe(`git rev-parse HEAD~1`)
     
     let to = is_pr ? await exe(`git log -n 1 origin/${GITHUB_BASE_REF} --pretty=format:%H`) 
       : await exe(`git rev-parse HEAD`);
