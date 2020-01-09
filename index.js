@@ -468,7 +468,7 @@ const create_release = async (opts) => {
   }
 }
 
-const dvc_diff = (from, to) => {
+const dvc_diff = async (from, to) => {
   console.log(from.replace('n', ''));
   console.log(to.replace('n', ''));
   try {
