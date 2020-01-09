@@ -491,7 +491,13 @@ const run_action = async () => {
 
     await install_dependencies();
 
-    await exe(`git checkout ${GITHUB_HEAD_REF} && dvc checkout`);
+    await exe(`git checkout origin/${GITHUB_HEAD_REF}`);
+
+    try {
+      await exe(`dvc checkout`);
+    } catch (err) {}
+    
+
 
     await init_remote();
 
