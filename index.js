@@ -270,8 +270,7 @@ const has_skip_ci = async () => {
 
 const install_dependencies = async () => {
   console.log('installing dvc...');
-  // TODO: re view stuck 
-  //await exe('pip uninstall -y enum34');
+  await exe('pip uninstall -y enum34');
   await exe('pip install --quiet dvc[all]');
 }
 
@@ -473,14 +472,14 @@ const create_release = async (opts) => {
 const run_action = async () => {
   try {
    
-    if (( await has_skip_ci() )) return 0;
+    const is_pr = GITHUB_EVENT_NAME === 'pull_request';
+
+    if (( await has_skip_ci() || is_pr )) return;
 
     await install_dependencies();
     await init_remote();
 
     const repro_runned = await run_repro();
-
-    const is_pr = GITHUB_EVENT_NAME === 'pull_request';
 
     let from = is_pr ? await exe(`git log -n 1 origin/${GITHUB_HEAD_REF} --pretty=format:%H`) 
       : github.context.payload.before;
