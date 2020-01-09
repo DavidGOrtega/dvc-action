@@ -270,6 +270,8 @@ const has_skip_ci = async () => {
 const install_dependencies = async () => {
   console.log('installing dvc...');
   await exe('pip uninstall -y enum34');
+
+  await exe('pip install --quiet dvc[all]');
   await exe('pip install --quiet dvc[all]');
 }
 
@@ -414,10 +416,11 @@ const run_repro = async () => {
     try {
     await exe(`
       git remote add github "https://$GITHUB_ACTOR:${github_token}@github.com/$GITHUB_REPOSITORY.git"
-      git push github HEAD:$GITHUB_HEAD_REF
+      git push -u origin HEAD
     `);
     }catch (err) {}
 
+    // git push github HEAD:$GITHUB_HEAD_REF
     repro_runned = true;
   }
 
@@ -485,6 +488,7 @@ const run_action = async () => {
     if (( await has_skip_ci() )) return;
 
     await install_dependencies();
+    
     await init_remote();
 
     const repro_runned = await run_repro();
