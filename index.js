@@ -411,10 +411,12 @@ const run_repro = async () => {
     }
 
     console.log('Git push');
+    try {
     await exe(`
       git remote add github "https://$GITHUB_ACTOR:${github_token}@github.com/$GITHUB_REPOSITORY.git"
       git push github HEAD:$GITHUB_REF
     `);
+    }catch (err) {}
 
     repro_runned = true;
   }
