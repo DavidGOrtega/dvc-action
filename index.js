@@ -492,10 +492,18 @@ const run_action = async () => {
       await exe(`git log --graph`);
     }catch(err){}
 
+    try {
     await dvc_diff((await exe(`git log -n 1 origin/${GITHUB_HEAD_REF} --pretty=format:%H`)), (await exe(`git log -n 1 origin/${GITHUB_BASE_REF} --pretty=format:%H`)));
+  }catch(err){}
+  try {
     await dvc_diff(github.context.payload.before, github.context.payload.after);
+  }catch(err){}
+  try {
     await dvc_diff((await exe(`git rev-parse HEAD~1`)), (await exe(`git rev-parse HEAD`)));
+  }catch(err){}
+  try {
     await dvc_diff((await exe(`git rev-parse HEAD^1`)), (await exe(`git rev-parse HEAD`)));
+  }catch(err){}
 
 
     let from = is_pr ? await exe(`git log -n 1 origin/${GITHUB_HEAD_REF} --pretty=format:%H`) 
