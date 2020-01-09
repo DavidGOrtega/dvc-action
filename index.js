@@ -22,7 +22,6 @@ const release_files = core.getInput('release_files') || [];
 const skip_ci = core.getInput('skip_ci');
 
 const {
-  GITHUB_SHA,
   GITHUB_REPOSITORY,
   GITHUB_HEAD_REF,
   GITHUB_BASE_REF,
@@ -30,6 +29,8 @@ const {
 } = process.env;
 
 const IS_PR = GITHUB_EVENT_NAME === 'pull_request';
+const GITHUB_SHA = IS_PR ? github.context.payload.before : process.env.GITHUB_SHA
+
 const STUB = process.env.STUB === 'true';
 
 const [owner, repo] = GITHUB_REPOSITORY.split('/');
@@ -416,13 +417,10 @@ const run_repro = async () => {
     try {
     await exe(`
       git remote add github "https://$GITHUB_ACTOR:${github_token}@github.com/$GITHUB_REPOSITORY.git"
-      git push github HEAD:$GITHUB_HEAD_REF
+      git push github HEAD:${IS_PR ? GITHUB_HEAD_REF : GITHUB_REF}
     `);
     }catch (err) {}
 
-
-    //git push github HEAD:$GITHUB_REF
-    // git push github HEAD:$GITHUB_HEAD_REF
     repro_runned = true;
   }
 
@@ -485,51 +483,28 @@ const dvc_diff = async (from, to) => {
 
 const run_action = async () => {
   try {
-    const is_pr = GITHUB_EVENT_NAME === 'pull_request';
-
     if (( await has_skip_ci() )) return;
 
     await install_dependencies();
 
-    await exe(`git checkout origin/${GITHUB_HEAD_REF}`);
-
-    try {
-      await exe(`dvc checkout`);
-    } catch (err) {}
-    
-
+    if (IS_PR) {
+      try {
+        await exe(`git checkout origin/${GITHUB_HEAD_REF}`);
+        await exe(`dvc checkout`);
+      } catch (err) {}
+    }
 
     await init_remote();
 
     const repro_runned = await run_repro();
 
-    console.log(process.env);
-    try {
-      await exe(`git log --graph --all`);
-    }catch(err){}
-
-    try {
-    await dvc_diff((await exe(`git log -n 1 origin/${GITHUB_HEAD_REF} --pretty=format:%H`)), (await exe(`git log -n 1 origin/${GITHUB_BASE_REF} --pretty=format:%H`)));
-  }catch(err){}
-  try {
-    await dvc_diff(github.context.payload.before, github.context.payload.after);
-  }catch(err){}
-  try {
-    await dvc_diff((await exe(`git rev-parse HEAD~1`)), (await exe(`git rev-parse HEAD`)));
-  }catch(err){}
-  try {
-    await dvc_diff((await exe(`git rev-parse HEAD^1`)), (await exe(`git rev-parse HEAD`)));
-  }catch(err){}
-
-
-    let from = is_pr ? await exe(`git log -n 1 origin/${GITHUB_HEAD_REF} --pretty=format:%H`) 
+    let from = IS_PR ? await exe(`git log -n 1 origin/${GITHUB_HEAD_REF} --pretty=format:%H`) 
       : github.context.payload.before;
 
     if (from === '0000000000000000000000000000000000000000')
-          from = await exe(`git rev-parse HEAD~1`)
-    
-    let to = is_pr ? await exe(`git log -n 1 origin/${GITHUB_BASE_REF} --pretty=format:%H`) 
-      : await exe(`git rev-parse HEAD`);
+      from = await exe(`git rev-parse HEAD^`)
+
+    const to = await exe(`git rev-parse HEAD`);
 
     const report = await check_dvc_report_summary({ from, to });
     await check_dvc_report({ summary: report });
