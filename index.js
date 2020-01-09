@@ -36,9 +36,9 @@ const STUB = process.env.STUB === 'true';
 const [owner, repo] = GITHUB_REPOSITORY.split('/');
 const octokit = new github.GitHub(github_token);
 
-//console.log(process.env);
-// console.log(github.context);
-// console.log(github.context.payload);
+console.log(process.env);
+console.log(github.context);
+console.log(github.context.payload);
 
 
 const DVC_METRICS_DIFF_STUB = {
