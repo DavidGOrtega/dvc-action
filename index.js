@@ -34,8 +34,7 @@ const STUB = process.env.STUB === 'true';
 const [owner, repo] = GITHUB_REPOSITORY.split('/');
 const octokit = new github.GitHub(github_token);
 
-// console.log(core);
-// console.log(process.env);
+//console.log(process.env);
 // console.log(github.context);
 // console.log(github.context.payload);
 
@@ -469,21 +468,38 @@ const create_release = async (opts) => {
   }
 }
 
+const dvc_diff = (from, to) => {
+  console.log(from.replace('n', ''));
+  console.log(to.replace('n', ''));
+  try {
+    console.log(await exe(`dvc diff ${from.replace('n', '')} ${to.replace('n', '')}`));
+    }catch(err){}
+}
+
 const run_action = async () => {
   try {
-   
     const is_pr = GITHUB_EVENT_NAME === 'pull_request';
 
-    if (( await has_skip_ci() || is_pr )) return;
+    if (( await has_skip_ci() )) return;
 
     await install_dependencies();
     await init_remote();
 
     const repro_runned = await run_repro();
 
+    console.log(process.env);
+    try {
+      await exe(`git log --graph`);
+    }catch(err){}
+
+    await dvc_diff((await exe(`git log -n 1 origin/${GITHUB_HEAD_REF} --pretty=format:%H`)), (await exe(`git log -n 1 origin/${GITHUB_BASE_REF} --pretty=format:%H`)));
+    await dvc_diff(github.context.payload.before, github.context.payload.after);
+    await dvc_diff((await exe(`git rev-parse HEAD~1`)), (await exe(`git rev-parse HEAD`)));
+    await dvc_diff((await exe(`git rev-parse HEAD^1`)), (await exe(`git rev-parse HEAD`)));
+
+
     let from = is_pr ? await exe(`git log -n 1 origin/${GITHUB_HEAD_REF} --pretty=format:%H`) 
       : github.context.payload.before;
-
 
     if (from === '0000000000000000000000000000000000000000')
           from = await exe(`git rev-parse HEAD~1`)
