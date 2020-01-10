@@ -494,16 +494,14 @@ const run_action = async () => {
         ref: GITHUB_SHA
       });
 
-      console.log(checks.data.check_runs);
-      
       if (checks.data.check_runs.filter(check => {
 
-        console.log(check);
-        console.log(GITHUB_WORKFLOW);
-      
         return check.name.includes(`${GITHUB_WORKFLOW}`)
       
-      }).length > 1) return
+      }).length > 1) {
+        console.log('This branch is actually running another check. Cancelling...');
+        return
+      }
     }
 
     if (( await has_skip_ci() )) return;
