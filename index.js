@@ -28,10 +28,7 @@ const {
 } = process.env;
 
 const IS_PR = GITHUB_EVENT_NAME === 'pull_request';
-const GITHUB_SHA = IS_PR ? github.context.payload.before : process.env.GITHUB_SHA
-
-console.log(github.context.payload.before)
-console.log(github.context.payload.after)
+const GITHUB_SHA = IS_PR ? github.context.payload.pull_request.head.sha : process.env.GITHUB_SHA
 
 const STUB = process.env.STUB === 'true';
 
@@ -475,15 +472,24 @@ const create_release = async (opts) => {
   }
 }
 
-const dvc_diff = async (from, to) => {
-  console.log(from.replace('n', ''));
-  console.log(to.replace('n', ''));
-  try {
-    console.log(await exe(`dvc diff ${from.replace('n', '')} ${to.replace('n', '')}`));
-    }catch(err){}
-}
-
 const run_action = async () => {
+
+  const checks = await octokit.checks.listForRef({
+    owner,
+    repo,
+    ref: GITHUB_SHA
+  });
+
+  console.log(checks);
+
+  const releases = octokit.repos.listReleases({
+    owner,
+    repo
+  });
+  
+  console.log(releases);
+  
+
   try {
     if (( await has_skip_ci() )) return;
 
