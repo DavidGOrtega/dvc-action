@@ -100,11 +100,14 @@ const dvc_report_data_md = async (opts) => {
 
     summary = '';
     sections.forEach(section => {
-      summary += ` - ${section.lbl} files: ${section.total}  \n`;
+      summary += `<details>
+      <summary>${section.lbl} files: ${section.total}</summary>\n\n`;
 
       // TODO: Replace this section with real output
       for (let i=0; i<section.total; i++)
-      summary += `    - file${i}\t\tMb\n`;
+      summary += `    * file${i}\t\tMb\n`;
+
+      summary += `</details>
     });
 
   } catch (err) {
@@ -530,7 +533,7 @@ const run_action = async () => {
       from: from.replace(/(\r\n|\n|\r)/gm, ""), 
       to: to.replace(/(\r\n|\n|\r)/gm,"") 
     });
-    
+
     await check_dvc_report({ summary: report });
 
     if (!release_skip && repro_runned)
