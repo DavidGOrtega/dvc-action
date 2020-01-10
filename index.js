@@ -480,9 +480,7 @@ const run_action = async () => {
     ref: GITHUB_SHA
   });
   
-  //if (checks.filter(check => check.name.includes(`${GITHUB_WORKFLOW} /`))) return
-
-  console.log(checks);
+  if (checks.data.check_runs.filter(check => check.name.includes(`${GITHUB_WORKFLOW} /`))) return
 
   const releases = await octokit.repos.listReleases({
     owner,
