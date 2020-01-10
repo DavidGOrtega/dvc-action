@@ -480,12 +480,15 @@ const run_action = async () => {
     ref: GITHUB_SHA
   });
 
-  console.log(checks);
+  console.log(checks.check_runs);
 
-  const releases = octokit.repos.listReleases({
+  const releases = await octokit.repos.listReleases({
     owner,
     repo
   });
+
+  const reports = releases.filter(release => release.name.includes('DVC')); 
+  //html_url
   
   console.log(releases);
   
