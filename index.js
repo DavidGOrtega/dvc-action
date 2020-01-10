@@ -511,11 +511,10 @@ const run_action = async () => {
 
     const repro_runned = await run_repro();
 
-    let from = IS_PR ? await exe(`git log -n 1 origin/${GITHUB_HEAD_REF} --pretty=format:%H`) 
-      : github.context.payload.before;
+    let from = IS_PR ? await exe(`git rev-parse HEAD~1`) : github.context.payload.before;
 
     if (from === '0000000000000000000000000000000000000000')
-      from = await exe(`git rev-parse HEAD^`)
+      from = await exe(`git rev-parse HEAD^`);
 
     const to = await exe(`git rev-parse HEAD`);
 
