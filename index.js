@@ -480,7 +480,7 @@ const run_action = async () => {
     ref: GITHUB_SHA
   });
   
-  if (checks.filter(check => check.name.includes(`${GITHUB_WORKFLOW} /`))) return
+  //if (checks.filter(check => check.name.includes(`${GITHUB_WORKFLOW} /`))) return
 
   console.log(checks.check_runs);
 
@@ -489,7 +489,7 @@ const run_action = async () => {
     repo
   });
 
-  const reports = releases.filter(release => release.name.includes('DVC')); 
+  //const reports = releases.filter(release => release.name.includes('DVC')); 
   //html_url
   
   console.log(releases);
