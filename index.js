@@ -107,7 +107,7 @@ const dvc_report_data_md = async (opts) => {
       for (let i=0; i<section.total; i++)
       summary += `    * file${i}\t\tMb\n`;
 
-      summary += `</details>
+      summary += `</details>`;
     });
 
   } catch (err) {
