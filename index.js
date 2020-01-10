@@ -25,6 +25,7 @@ const {
   GITHUB_REPOSITORY,
   GITHUB_HEAD_REF,
   GITHUB_EVENT_NAME,
+  GITHUB_WORKFLOW,
 } = process.env;
 
 const IS_PR = GITHUB_EVENT_NAME === 'pull_request';
