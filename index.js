@@ -487,10 +487,6 @@ const run_action = async () => {
   
 
   try {
-    if (( await has_skip_ci() )) return;
-
-    await install_dependencies();
-
     if (IS_PR) {
       const checks = await octokit.checks.listForRef({
         owner,
@@ -500,8 +496,14 @@ const run_action = async () => {
 
       console.log(checks.data.check_runs);
       
-      if (checks.data.check_runs.filter(check => check.name.includes(`${GITHUB_WORKFLOW} /`)) > 1) return
+      if (checks.data.check_runs.filter(check => check.name.includes(`${GITHUB_WORKFLOW}`)) > 1) return
+    }
 
+    if (( await has_skip_ci() )) return;
+
+    await install_dependencies();
+
+    if (IS_PR) {
       try {
         await exe(`git checkout origin/${GITHUB_HEAD_REF}`);
         await exe(`dvc checkout`);
