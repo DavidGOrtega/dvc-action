@@ -272,7 +272,6 @@ const has_skip_ci = async () => {
 const install_dependencies = async () => {
   console.log('installing dvc...');
   await exe('pip uninstall -y enum34');
-
   await exe('pip install --quiet dvc[all]');
 }
 
