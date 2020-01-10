@@ -483,7 +483,7 @@ const run_action = async () => {
   //const reports = releases.filter(release => release.name.includes('DVC')); 
   //html_url
   
-  console.log(releases);
+  //console.log(releases);
   
 
   try {
@@ -497,6 +497,8 @@ const run_action = async () => {
         repo,
         ref: GITHUB_SHA
       });
+
+      console.log(checks.data.check_runs);
       
       if (checks.data.check_runs.filter(check => check.name.includes(`${GITHUB_WORKFLOW} /`)) > 1) return
 
