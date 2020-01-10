@@ -479,6 +479,8 @@ const run_action = async () => {
     repo,
     ref: GITHUB_SHA
   });
+  
+  if (checks.filter(check => check.name.includes(`${GITHUB_WORKFLOW} /`))) return
 
   console.log(checks.check_runs);
 
