@@ -496,7 +496,14 @@ const run_action = async () => {
 
       console.log(checks.data.check_runs);
       
-      if (checks.data.check_runs.filter(check => check.name.includes(`${GITHUB_WORKFLOW}`)) > 1) return
+      if (checks.data.check_runs.filter(check => {
+
+        console.log(check);
+        console.log(GITHUB_WORKFLOW);
+      
+        return check.name.includes(`${GITHUB_WORKFLOW}`)
+      
+      }).length > 1) return
     }
 
     if (( await has_skip_ci() )) return;
