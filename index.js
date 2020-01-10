@@ -526,7 +526,11 @@ const run_action = async () => {
 
     const to = await exe(`git rev-parse HEAD`);
 
-    const report = await check_dvc_report_summary({ from, to });
+    const report = await check_dvc_report_summary({ 
+      from: from.replace(/(\r\n|\n|\r)/gm, ""), 
+      to: to.replace(/(\r\n|\n|\r)/gm,"") 
+    });
+    
     await check_dvc_report({ summary: report });
 
     if (!release_skip && repro_runned)
