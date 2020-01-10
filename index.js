@@ -22,22 +22,23 @@ const release_files = core.getInput('release_files') || [];
 const skip_ci = core.getInput('skip_ci');
 
 const {
-  GITHUB_SHA,
   GITHUB_REPOSITORY,
   GITHUB_HEAD_REF,
-  GITHUB_BASE_REF,
   GITHUB_EVENT_NAME,
+  GITHUB_WORKFLOW,
 } = process.env;
+
+const IS_PR = GITHUB_EVENT_NAME === 'pull_request';
+const GITHUB_SHA = IS_PR ? github.context.payload.pull_request.head.sha : process.env.GITHUB_SHA
 
 const STUB = process.env.STUB === 'true';
 
 const [owner, repo] = GITHUB_REPOSITORY.split('/');
 const octokit = new github.GitHub(github_token);
 
-// console.log(core);
-// console.log(process.env);
-// console.log(github.context);
-// console.log(github.context.payload);
+console.log(process.env);
+console.log(github.context);
+console.log(github.context.payload);
 
 
 const DVC_METRICS_DIFF_STUB = {
@@ -412,10 +413,12 @@ const run_repro = async () => {
     }
 
     console.log('Git push');
+    try {
     await exe(`
       git remote add github "https://$GITHUB_ACTOR:${github_token}@github.com/$GITHUB_REPOSITORY.git"
-      git push github HEAD:$GITHUB_REF
+      git push github HEAD:${IS_PR ? GITHUB_HEAD_REF : GITHUB_REF}
     `);
+    }catch (err) {}
 
     repro_runned = true;
   }
@@ -470,22 +473,58 @@ const create_release = async (opts) => {
 }
 
 const run_action = async () => {
-  try {
-   
-    const is_pr = GITHUB_EVENT_NAME === 'pull_request';
 
-    if (( await has_skip_ci() || is_pr )) return;
+  const releases = await octokit.repos.listReleases({
+    owner,
+    repo
+  });
+
+  //const reports = releases.filter(release => release.name.includes('DVC')); 
+  //html_url
+  
+  //console.log(releases);
+  
+
+  try {
+    if (IS_PR) {
+      const checks = await octokit.checks.listForRef({
+        owner,
+        repo,
+        ref: GITHUB_SHA
+      });
+
+      if (checks.data.check_runs.filter(check => {
+
+        return check.name.includes(`${GITHUB_WORKFLOW}`)
+      
+      }).length > 1) {
+        console.log('This branch is actually running another check. Cancelling...');
+        return
+      }
+    }
+
+    if (( await has_skip_ci() )) return;
 
     await install_dependencies();
+
+    if (IS_PR) {
+      try {
+        await exe(`git checkout origin/${GITHUB_HEAD_REF}`);
+        await exe(`dvc checkout`);
+      } catch (err) {}
+    }
+
     await init_remote();
 
     const repro_runned = await run_repro();
 
-    let from = is_pr ? await exe(`git log -n 1 origin/${GITHUB_HEAD_REF} --pretty=format:%H`) 
+    let from = IS_PR ? await exe(`git log -n 1 origin/${GITHUB_BASE_REF} --pretty=format:%H`) 
       : github.context.payload.before;
-    
-    let to = is_pr ? await exe(`git log -n 1 origin/${GITHUB_BASE_REF} --pretty=format:%H`) 
-      : await exe(`git rev-parse HEAD`);
+
+    if (from === '0000000000000000000000000000000000000000')
+      from = await exe(`git rev-parse HEAD^`);
+
+    const to = await exe(`git rev-parse HEAD`);
 
     const report = await check_dvc_report_summary({ from, to });
     await check_dvc_report({ summary: report });
