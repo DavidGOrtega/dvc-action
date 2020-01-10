@@ -474,14 +474,6 @@ const create_release = async (opts) => {
 
 const run_action = async () => {
 
-  const checks = await octokit.checks.listForRef({
-    owner,
-    repo,
-    ref: GITHUB_SHA
-  });
-  
-  if (checks.data.check_runs.filter(check => check.name.includes(`${GITHUB_WORKFLOW} /`))) return
-
   const releases = await octokit.repos.listReleases({
     owner,
     repo
@@ -499,6 +491,14 @@ const run_action = async () => {
     await install_dependencies();
 
     if (IS_PR) {
+      const checks = await octokit.checks.listForRef({
+        owner,
+        repo,
+        ref: GITHUB_SHA
+      });
+      
+      if (checks.data.check_runs.filter(check => check.name.includes(`${GITHUB_WORKFLOW} /`)) > 1) return
+
       try {
         await exe(`git checkout origin/${GITHUB_HEAD_REF}`);
         await exe(`dvc checkout`);
