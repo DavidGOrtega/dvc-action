@@ -24,12 +24,14 @@ const skip_ci = core.getInput('skip_ci');
 const {
   GITHUB_REPOSITORY,
   GITHUB_HEAD_REF,
-  GITHUB_BASE_REF,
   GITHUB_EVENT_NAME,
 } = process.env;
 
 const IS_PR = GITHUB_EVENT_NAME === 'pull_request';
 const GITHUB_SHA = IS_PR ? github.context.payload.before : process.env.GITHUB_SHA
+
+console.log(github.context.payload.before)
+console.log(github.context.payload.after)
 
 const STUB = process.env.STUB === 'true';
 
