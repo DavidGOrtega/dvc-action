@@ -184,17 +184,20 @@ const dvc_report_metrics_md = async () => {
           const content = await readFile(file, "utf8");
           const json_parsed = JSON.parse(content);
 
+          let sectionmark = '';
           try {
-              summary += `\n ${(await vega2md(file, json_parsed))} \n`;
+            sectionmark += `${(await vega2md(file, json_parsed))}`;
           } catch(err) {
             if (json_parsed) {
-              summary += `\n ${json_2_mdtable(json_parsed)} \n`;
+              sectionmark += `${json_2_mdtable(json_parsed)}`;
             
             } else
-              summary += `\n \`\`\`${content}\`\`\` \n`;
-          }  
+              sectionmark += `\`\`\`${content}\`\`\``;
+          } 
+          
+          summary += `\n<details><summary>${file}</summary>\n\n${sectionmark}\n</details>\n`;
         }
-      
+
       } catch(err) {
         console.log(err);
       }
@@ -224,7 +227,11 @@ const check_dvc_report_summary = async (opts) => {
   const dvc_releases = releases.data.filter(release => release.name && release.name.includes('DVC')); 
   const links = dvc_releases.map(release => `[${release.tag_name}](${release.html_url})`).join(', ');
 
+<<<<<<< HEAD
+  const releases_summary = `<details><summary>Experiments</summary>\n\n${links}\n</details>`;
+=======
   const releases_summary = `<details><summary>Other experiments</summary>\n\n${links}\n</details>`;
+>>>>>>> 54f7bd2f9850cb2079acb2ccd486b0453ddd8178
 
   const summary = 
   `### Data  \n
@@ -235,6 +242,10 @@ const check_dvc_report_summary = async (opts) => {
   
   ${metrics_vega} \n
 
+<<<<<<< HEAD
+  ### Other experiments \n
+=======
+>>>>>>> 54f7bd2f9850cb2079acb2ccd486b0453ddd8178
   ${releases_summary}
   `;
 
