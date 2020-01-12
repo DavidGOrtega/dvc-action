@@ -193,11 +193,11 @@ const dvc_report_metrics_md = async () => {
             
             } else
             sectionmark += `\`\`\`${content}\`\`\``;
-          }  
+          } 
+          
+          summary += `\n<details><summary>${file}</summary>\n\n${sectionmark}\n</details>\n`;
         }
-      
-        summary += `\n<details><summary>${file}</summary>\n\n${sectionmark}\n</details>\n`;
-
+        
       } catch(err) {
         console.log(err);
       }
