@@ -184,17 +184,20 @@ const dvc_report_metrics_md = async () => {
           const content = await readFile(file, "utf8");
           const json_parsed = JSON.parse(content);
 
+          let sectionmark = '';
           try {
-              summary += `\n ${(await vega2md(file, json_parsed))} \n`;
+            sectionmark += `${(await vega2md(file, json_parsed))}`;
           } catch(err) {
             if (json_parsed) {
-              summary += `\n ${json_2_mdtable(json_parsed)} \n`;
+              sectionmark += `${json_2_mdtable(json_parsed)}`;
             
             } else
-              summary += `\n \`\`\`${content}\`\`\` \n`;
+            sectionmark += `\`\`\`${content}\`\`\``;
           }  
         }
       
+        summary += `\n<details><summary>${file}</summary>\n\n${sectionmark}\n</details>\n`;
+
       } catch(err) {
         console.log(err);
       }
