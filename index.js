@@ -192,12 +192,12 @@ const dvc_report_metrics_md = async () => {
               sectionmark += `${json_2_mdtable(json_parsed)}`;
             
             } else
-            sectionmark += `\`\`\`${content}\`\`\``;
+              sectionmark += `\`\`\`${content}\`\`\``;
           } 
           
           summary += `\n<details><summary>${file}</summary>\n\n${sectionmark}\n</details>\n`;
         }
-        
+
       } catch(err) {
         console.log(err);
       }
@@ -227,7 +227,7 @@ const check_dvc_report_summary = async (opts) => {
   const dvc_releases = releases.data.filter(release => release.name && release.name.includes('DVC')); 
   const links = dvc_releases.map(release => `[${release.tag_name}](${release.html_url})`).join(', ');
 
-  const releases_summary = `<details><summary>Other experiments</summary>\n\n${links}\n</details>`;
+  const releases_summary = `<details><summary>Experiments</summary>\n\n${links}\n</details>`;
 
   const summary = 
   `### Data  \n
@@ -238,6 +238,7 @@ const check_dvc_report_summary = async (opts) => {
   
   ${metrics_vega} \n
 
+  ### Other experiments \n
   ${releases_summary}
   `;
 
