@@ -221,14 +221,10 @@ const check_dvc_report_summary = async (opts) => {
     repo
   });
 
-  const dvc_releases = releases.data; //releases.data.filter(release => release.tag_name.includes('DVC')); 
+  const dvc_releases = releases.data.filter(release => release.name && release.name.includes('DVC')); 
   const links = dvc_releases.map(release => `[${release.tag_name}](${release.html_url})`).join(', ');
 
-  const releases_summary = `<details>
-    <summary>### Other experiments</summary>\n\n;
-
-    ${links}
-    </details>`;
+  const releases_summary = `<details><summary>Other experiments</summary>\n\n${links}\n</details>`;
 
   const summary = 
   `### Data  \n
@@ -477,7 +473,7 @@ const create_release = async (opts) => {
   const release = await octokit.repos.createRelease({
       owner,
       repo,
-      name: `${GITHUB_SHA} DVC Release`,
+      name: `${tag_name} DVC Release`,
       head_sha: GITHUB_SHA,
 
       tag_name,
