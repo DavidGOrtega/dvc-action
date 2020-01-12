@@ -221,8 +221,8 @@ const check_dvc_report_summary = async (opts) => {
     repo
   });
 
-  const dvc_releases = releases.data.filter(release => release.name.includes('DVC')); 
-  const links = dvc_releases.forEach(release => `[${release.name}](${release.html_url})`).join(', ');
+  const dvc_releases = releases.data; //releases.data.filter(release => release.tag_name.includes('DVC')); 
+  const links = dvc_releases.forEach(release => `[${release.tag_name}](${release.html_url})`).join(', ');
 
   const releases_summary = `<details>
     <summary>### Other experiments</summary>\n\n;
