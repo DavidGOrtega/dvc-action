@@ -70,16 +70,13 @@ const exe = async (command, quiet) => {
   return stdout;
 }
 
-
-const dvc_has_remote = async() => {
-  return (await exe('dvc remote list')).length > 0;
-}
-
-
 const uuid = () =>{
   return new Date().getUTCMilliseconds()
 }
 
+const dvc_has_remote = async() => {
+  return (await exe('dvc remote list')).length > 0;
+}
 
 const dvc_report_data_md = async (opts) => {
   const { from, to } = opts;
@@ -219,6 +216,16 @@ const check_dvc_report_summary = async (opts) => {
   const metrics_diff = await dvc_report_metrics_diff_md(opts);
   const metrics_vega = await dvc_report_metrics_md();
 
+  const releases = await octokit.repos.listReleases({
+    owner,
+    repo
+  });
+
+  const dvc_releases = releases.data.filter(release => release.name && release.name.includes('DVC')); 
+  const links = dvc_releases.map(release => `[${release.tag_name}](${release.html_url})`).join(', ');
+
+  const releases_summary = `<details><summary>Other experiments</summary>\n\n${links}\n</details>`;
+
   const summary = 
   `### Data  \n
   ${data}  
@@ -226,7 +233,10 @@ const check_dvc_report_summary = async (opts) => {
   ### Metrics  \n
   ${metrics_diff}  \n
   
-  ${metrics_vega}`;
+  ${metrics_vega} \n
+
+  ${releases_summary}
+  `;
 
   return summary;
 }
@@ -463,6 +473,7 @@ const create_release = async (opts) => {
   const release = await octokit.repos.createRelease({
       owner,
       repo,
+      name: `${tag_name} DVC Release`,
       head_sha: GITHUB_SHA,
 
       tag_name,
@@ -477,17 +488,6 @@ const create_release = async (opts) => {
 
 const run_action = async () => {
 
-  const releases = await octokit.repos.listReleases({
-    owner,
-    repo
-  });
-
-  //const reports = releases.filter(release => release.name.includes('DVC')); 
-  //html_url
-  
-  //console.log(releases);
-  
-
   try {
     if (IS_PR) {
       const checks = await octokit.checks.listForRef({
@@ -501,7 +501,7 @@ const run_action = async () => {
         return check.name.includes(`${GITHUB_WORKFLOW}`)
       
       }).length > 1) {
-        console.log('This branch is actually running another check. Cancelling...');
+        console.log('This branch is running or has runned another check. Cancelling...');
         return
       }
     }
