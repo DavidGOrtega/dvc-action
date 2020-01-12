@@ -227,7 +227,11 @@ const check_dvc_report_summary = async (opts) => {
   const dvc_releases = releases.data.filter(release => release.name && release.name.includes('DVC')); 
   const links = dvc_releases.map(release => `[${release.tag_name}](${release.html_url})`).join(', ');
 
+<<<<<<< HEAD
   const releases_summary = `<details><summary>Experiments</summary>\n\n${links}\n</details>`;
+=======
+  const releases_summary = `<details><summary>Other experiments</summary>\n\n${links}\n</details>`;
+>>>>>>> 54f7bd2f9850cb2079acb2ccd486b0453ddd8178
 
   const summary = 
   `### Data  \n
@@ -238,7 +242,10 @@ const check_dvc_report_summary = async (opts) => {
   
   ${metrics_vega} \n
 
+<<<<<<< HEAD
   ### Other experiments \n
+=======
+>>>>>>> 54f7bd2f9850cb2079acb2ccd486b0453ddd8178
   ${releases_summary}
   `;
 
