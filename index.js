@@ -222,6 +222,7 @@ const check_dvc_report_summary = async (opts) => {
   });
 
   const dvc_releases = releases.data; //releases.data.filter(release => release.tag_name.includes('DVC')); 
+  console.log(dvc_releases);
   const links = dvc_releases.forEach(release => `[${release.tag_name}](${release.html_url})`).join(', ');
 
   const releases_summary = `<details>
