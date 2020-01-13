@@ -110,7 +110,7 @@ const dvc_report_metrics_diff_md = async () => {
 
     let dvc_out;
     try {
-      dvc_out = await exe('dvc metrics diff HEAD^^');
+      dvc_out = await exe('dvc metrics diff --show-json');
 
     } catch (err) {
       if (!STUB) throw err;
@@ -122,7 +122,7 @@ const dvc_report_metrics_diff_md = async () => {
     }
 
     const diff = [];
-    for (path in data) {
+    for (path in dvc_out) {
         const output = data[path];
         for (metric in output) {
             const value = output[metric]['new'];
