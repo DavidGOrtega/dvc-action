@@ -41,19 +41,7 @@ const octokit = new github.GitHub(github_token);
 // console.log(github.context.payload);
 
 
-const DVC_METRICS_DIFF_STUB = {
-  "train": {
-    "train_time": "3d 8h 23m 15s",
-    "memory_consume": "8Gb"
-  },
-  "eval": {
-    "inference_time": 0.001,
-    "memory_consume": "124Mb",
-
-    "top1-error": 0.0385,
-    "top5-error": 0.039221
-  }
-}
+const DVC_METRICS_DIFF_STUB = {"metrics.json": {"types.top5-error": {"old": 0.525454, "new": 0.5254552, "diff": 1.2000000000345068e-06}, "error-rate": {"old": 0.192458, "new": 0.19655656, "diff": 0.004098560000000001}, "AUC": {"old": 0.674134, "new": 0.675554, "diff": 0.0014199999999999768}, "types.top10-error": {"old": 0.86642, "new": 0.86857, "diff": 0.0021499999999999853}}}
 
 
 const exe = async (command, quiet) => {
@@ -122,7 +110,7 @@ const dvc_report_metrics_diff_md = async () => {
 
     let dvc_out;
     try {
-      dvc_out = await exe('dvc metrics diff HEAD^^');
+      dvc_out = await exe('dvc metrics diff --show-json');
 
     } catch (err) {
       if (!STUB) throw err;
@@ -133,13 +121,18 @@ const dvc_report_metrics_diff_md = async () => {
       // STUB ENDS
     }
 
-    summary = '';
-    for( const pipe in dvc_out ) {
-      summary += ` - ${pipe}  \n`;
+    const diff = [];
+    for (path in dvc_out) {
+        const output = dvc_out[path];
+        for (metric in output) {
+            const value = output[metric]['new'];
+            const change = output[metric]['diff'];
 
-      for (const metric in dvc_out[pipe] )
-        summary += `    - ${metric}:\t\t${dvc_out[pipe][metric]}\n`;
-    };
+            diff.push({path, metric, value, change });
+        }
+    }
+
+    summary = `\n${json_2_mdtable(diff)}`;
   
   } catch (err) {
     console.error(err);
