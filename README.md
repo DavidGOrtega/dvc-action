@@ -260,6 +260,8 @@ branch2
 
 
 ## Installation 
+
+This will install vegametrics command line in your system
 ```sh
 npm install -g git+https://github.com/DavidGOrtega/dvc-action.git
 ```
