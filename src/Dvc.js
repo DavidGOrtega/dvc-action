@@ -92,7 +92,7 @@ const FIXTURES2 = {
 }
 
 const get = async (opts) => {
-    return FIXTURES[opts.rev ? `${opts.input}@${opts.rev}` : opts.input];
+    //return FIXTURES[opts.rev ? `${opts.input}@${opts.rev}` : opts.input];
 
     const output_tmp = `./get_${new Date().getUTCMilliseconds()}`;
     const { input, rev, output = output_tmp, url = './' } = opts;
