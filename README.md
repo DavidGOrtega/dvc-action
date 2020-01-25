@@ -266,6 +266,8 @@ npm install -g git+https://github.com/DavidGOrtega/dvc-action.git
 
 ## Usage
 
+:eyes: Use it inside your dvc repo!
+
 It receives an --input vega spec and --output folder
 
 ```sh
