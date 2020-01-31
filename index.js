@@ -3,22 +3,16 @@ const github = require('@actions/github')
 
 const util = require('util')
 const exec = util.promisify(require('child_process').exec)
+const fs = require('fs').promises
 
-const fs = require('fs')
-const writeFile = util.promisify(fs.writeFile)
-const readFile = util.promisify(fs.readFile)
-const fsStat = util.promisify(fs.stat)
-
-const vega = require('vega');
-const vegalite = require('vega-lite');
-const json_2_mdtable =require('json-to-markdown-table2');
-const imgur = require('imgur')
-imgur.setClientId('9ae2688f25fae09');
+const DVC = require('./src/Dvc');
+const Report = require('./src/Report');
 
 const github_token = core.getInput('github_token');
 const dvc_repro_file = core.getInput('dvc_repro_file');
 const release_skip = core.getInput('release_skip')  === 'true';
-const release_files = core.getInput('release_files') || [];
+const release_files = core.getInput('release_files') ? core.getInput('release_files').split(/[ ,]+/) : [];
+const release_files = core.getInput('templates') ? core.getInput('vega_templates').split(/[ ,]+/) : [];
 const skip_ci = core.getInput('skip_ci');
 
 const {
@@ -31,21 +25,15 @@ const {
 const IS_PR = GITHUB_EVENT_NAME === 'pull_request';
 const GITHUB_SHA = IS_PR ? github.context.payload.pull_request.head.sha : process.env.GITHUB_SHA
 
-const STUB = process.env.STUB === 'true';
-
 const [owner, repo] = GITHUB_REPOSITORY.split('/');
 const octokit = new github.GitHub(github_token);
 
 // console.log(process.env);
 // console.log(github.context);
 // console.log(github.context.payload);
-
-
-const DVC_METRICS_DIFF_STUB = {"metrics.json": {"types.top5-error": {"old": 0.525454, "new": 0.5254552, "diff": 1.2000000000345068e-06}, "error-rate": {"old": 0.192458, "new": 0.19655656, "diff": 0.004098560000000001}, "AUC": {"old": 0.674134, "new": 0.675554, "diff": 0.0014199999999999768}, "types.top10-error": {"old": 0.86642, "new": 0.86857, "diff": 0.0021499999999999853}}}
-
-
+ 
 const exe = async (command, quiet) => {
-  const { stdout, stderr, error } = await exec(command);
+  const { stdout, stderr } = await exec(command);
 
   if (!quiet) {
     console.log(`\nCommand: ${command}`);
@@ -53,218 +41,12 @@ const exe = async (command, quiet) => {
     console.log(`\t\t${stderr}`);
   }
    
-  if (error) throw new Error(stderr);
-
   return stdout;
 }
 
 const uuid = () =>{
   return new Date().getUTCMilliseconds()
 }
-
-const dvc_has_remote = async() => {
-  return (await exe('dvc remote list')).length > 0;
-}
-
-const dvc_report_data_md = async (opts) => {
-  const { from, to } = opts;
-  let summary = 'No data available';
-
-  try {
-    const dvc_out = await exe(`dvc diff ${from} ${to}`);
-
-    //1799 files untouched, 0 files modified, 1000 files added, 1 file deleted, size was increased by 23.0 MB
-    const regex = /(\d+) files? untouched, (\d+) files? modified, (\d+) files? added, (\d+) files? deleted/g;
-    const match = regex.exec(dvc_out);
-
-    const sections = [
-      { lbl: 'New', total: match[3] },
-      { lbl: 'Modified', total: match[2] },
-      { lbl: 'Deleted', total: match[4] },
-    ];
-
-    summary = '';
-    sections.forEach(section => {
-      summary += `<details>
-      <summary>${section.lbl} files: ${section.total}</summary>\n\n`;
-
-      // TODO: Replace this section with real output
-      for (let i=0; i<section.total; i++)
-      summary += `    * file${i}\t\tMb\n`;
-
-      summary += `</details>`;
-    });
-
-  } catch (err) {
-    console.error(err);
-  }
-
-  return summary;
-}
-
-
-const dvc_report_metrics_diff_md = async () => {
-  let summary = 'No metrics difference available';
-
-  try {
-
-    let dvc_out;
-    try {
-      dvc_out = await exe('dvc metrics diff --show-json');
-
-    } catch (err) {
-      if (!STUB) throw err;
-
-      // STUB
-      console.log('dvc_report_metrics_diff_md failed, doing STUB');
-      dvc_out = DVC_METRICS_DIFF_STUB;
-      // STUB ENDS
-    }
-
-    const diff = [];
-    for (path in dvc_out) {
-        const output = dvc_out[path];
-        for (metric in output) {
-            const value = output[metric]['new'];
-            const change = output[metric]['diff'];
-
-            diff.push({path, metric, value, change });
-        }
-    }
-
-    summary = `\n${json_2_mdtable(diff)}`;
-  
-  } catch (err) {
-    console.error(err);
-  }
- 
-  return summary;
-}
-
-
-const vega2md = async (name, vega_json) => {
-  const is_vega_lite = vega_json['$schema'].includes('vega-lite');
-  const vega_data = is_vega_lite ? vegalite.compile(vega_json).spec : vega_json;
-  const view = new vega.View(vega.parse(vega_data), {renderer: 'none'});
-
-  const canvas = await view.toCanvas();
-
-  const path = `./../${uuid()}.png`;
-  await writeFile(path, canvas.toBuffer());
-
-  const imgur_resp = await imgur.uploadFile(path);
-  const image_uri = imgur_resp.data.link;
-
-  return `![${name}](${image_uri})`;
-}
-
-
-const dvc_report_metrics_md = async () => {
-  let summary = '';
-
-  try {
-    const quiet = true;
-    const dvc_out = await exe('dvc metrics show', quiet);
-
-    const regex = /.+?:/gm;
-    const matches = dvc_out.match(regex);
-
-    for (idx in matches) {
-      const file = matches[idx].replace(':', '').replace(/\t/g, '');
-
-      try {
-        if (!file.includes('"')) {
-          const content = await readFile(file, "utf8");
-          const json_parsed = JSON.parse(content);
-
-          let sectionmark = '';
-          try {
-            sectionmark += `${(await vega2md(file, json_parsed))}`;
-          } catch(err) {
-            if (json_parsed) {
-              sectionmark += `${json_2_mdtable(json_parsed)}`;
-            
-            } else
-              sectionmark += `\`\`\`${content}\`\`\``;
-          } 
-          
-          summary += `\n<details><summary>${file}</summary>\n\n${sectionmark}\n</details>\n`;
-        }
-
-      } catch(err) {
-        console.log(err);
-      }
-    }
-  
-  } catch (err) {
-    console.error(err);
-  }
-
-  if (!summary.length)
-    return 'No metrics available';
-
-  return `${summary} \n`;
-}
-
-
-const check_dvc_report_summary = async (opts) => {
-  const data = await dvc_report_data_md(opts);
-  const metrics_diff = await dvc_report_metrics_diff_md(opts);
-  const metrics_vega = await dvc_report_metrics_md();
-
-  const releases = await octokit.repos.listReleases({
-    owner,
-    repo
-  });
-
-  const dvc_releases = releases.data.filter(release => release.name && release.name.includes('DVC')); 
-  const links = dvc_releases.map(release => `[${release.tag_name}](${release.html_url})`).join(', ');
-
-  const releases_summary = `<details><summary>Experiments</summary>\n\n${links}\n</details>`;
-
-  const summary = 
-  `### Data  \n
-  ${data}  
-  
-  ### Metrics  \n
-  ${metrics_diff}  \n
-  
-  ${metrics_vega} \n
-
-  ### Other experiments \n
-  ${releases_summary}
-  `;
-
-  return summary;
-}
-
-const check_dvc_report = async (opts) => {
-  console.log("Creating DVC report");
-
-  const { summary } = opts;
-
-  const started_at = new Date();
-  const name = `DVC Report ${uuid()}`;
-  const conclusion = 'success';
-  const title = 'DVC Report';
-
-  await octokit.checks.create({
-    owner,
-    repo,
-    head_sha: GITHUB_SHA,
-
-    started_at,
-    name,
-    conclusion,
-    completed_at: new Date(),
-    status: 'completed',
-    output: {
-      title,
-      summary
-    }
-  })
-}
-
 
 const has_skip_ci = async () => {
   console.log('Checking skip');
@@ -278,104 +60,17 @@ const has_skip_ci = async () => {
   return false;
 }
 
-
 const install_dependencies = async () => {
-  console.log('installing dvc...');
-  await exe('pip uninstall -y enum34');
-  await exe('pip install --quiet dvc[all]');
-}
-
-const init_remote = async () => {
-  const dvc_remote_list =  await exe('dvc remote list');
-  const has_dvc_remote = dvc_remote_list.length > 0;
-
-  if (!has_dvc_remote) { 
-    console.log(':warning: Experiment does not have dvc remote!');
-    return;
-  }
-
-  // s3
-  if(dvc_remote_list.toLowerCase().includes('s3://')) {
-    const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
-    if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
-      console.log(`:warning: S3 dvc remote found but no credentials found`);
-    }
-  }
-
-  // azure
-  if(dvc_remote_list.toLowerCase().includes('azure://')) {
-    const { AZURE_STORAGE_CONNECTION_STRING, AZURE_STORAGE_CONTAINER_NAME } = process.env;
-    if (!AZURE_STORAGE_CONNECTION_STRING || !AZURE_STORAGE_CONTAINER_NAME) {
-      console.log(`:warning: Azure dvc remote found but no credentials found`);
-    }
-  }
-
-  // Aliyn
-  if(dvc_remote_list.toLowerCase().includes('azure://')) {
-    const { OSS_BUCKET, OSS_ACCESS_KEY_ID, OSS_ACCESS_KEY_SECRET, OSS_ENDPOINT } = process.env;
-    if (!OSS_BUCKET || !OSS_ACCESS_KEY_ID || !OSS_ACCESS_KEY_SECRET || !OSS_ENDPOINT) {
-      console.log(`:warning: Aliyin dvc remote found but no credentials found`);
-    }
-  }
-
-  // gs
-  if(dvc_remote_list.toLowerCase().includes('gs://')) {
-    const { GOOGLE_APPLICATION_CREDENTIALS } = process.env;
-    if (GOOGLE_APPLICATION_CREDENTIALS) {
-      const path = `./../GOOGLE_APPLICATION_CREDENTIALS.json`;
-      await writeFile(path, GDRIVE_USER_CREDENTIALS);
-      process.env['GOOGLE_APPLICATION_CREDENTIALS'] = path;
-    
-    } else {
-      console.log(`:warning: Google storage dvc remote found but no credentials found`);
-    }
-  }
-  
-  // gdrive
-  if(dvc_remote_list.toLowerCase().includes('gdrive://')) {
-    
-    const { GDRIVE_USER_CREDENTIALS } = process.env;
-    if (GDRIVE_USER_CREDENTIALS) {
-        const path = '.dvc/tmp/gdrive-user-credentials.json';
-        await writeFile(path, GDRIVE_USER_CREDENTIALS);
-
-    } else {
-      console.log(`:warning: Google drive dvc remote found but no credentials found`);
-    }
-  }
-
-  // ssh
-  if(dvc_remote_list.toLowerCase().includes('ssh://')) {
-    
-    const { DVC_REMOTE_SSH_KEY } = process.env;
-    if (DVC_REMOTE_SSH_KEY) {
-        const path = '~/.ssh/dvc_remote.pub';
-        await writeFile(path, DVC_REMOTE_SSH_KEY);
-        await exe(`echo ${path} >> ~/.ssh/known_hosts`);
-
-    } else {
-      console.log(`:warning: SSH dvc remote found but no credentials found`);
-    }
-  }
-
-  // HDFS
-  if(dvc_remote_list.toLowerCase().includes('hdfs://')) {
-    // TODO: implement
-    console.log(`:warning: HDFS secrets not yet implemented`);
-  }
-
-  console.log('Pulling from dvc remote');
-  if (has_dvc_remote) {
-    // TODO: check if -f and try would be desirable
-    // projects with repro without push data previously fails
-    try {
-      await exe('dvc pull -f');
-    } catch (err) {}
-    
+  try {
+    await exe('dvc');
+  } catch(err) {
+    console.log('installing dvc...');
+    await exe('pip uninstall -y enum34');
+    await exe('pip install --quiet dvc[all]');
   }
 }
 
-
+// TODO: make it non Github dependant
 const run_repro = async () => {
   let repro_runned = false;
 
@@ -416,7 +111,7 @@ const run_repro = async () => {
       git commit -a -m "dvc repro ${skip_ci}"
     `);
 
-    const has_dvc_remote = await dvc_has_remote();
+    const has_dvc_remote = await DVC.has_remote();
     if (has_dvc_remote) {
       console.log('DVC Push');
       await exe('dvc push');
@@ -436,16 +131,60 @@ const run_repro = async () => {
   return repro_runned;
 }
 
+const dvc_report = async () => {
+  let from = IS_PR ? await exe(`git log -n 1 origin/${GITHUB_BASE_REF} --pretty=format:%H`) 
+  : github.context.payload.before;
 
-const octokit_upload_release_asset = async (url, filepath) => {
-  const stat = await fsStat(filepath);
+  if (from === '0000000000000000000000000000000000000000')
+    from = await exe(`git rev-parse HEAD^`);
+
+  from = from.replace(/(\r\n|\n|\r)/gm, "")
+
+  const to = await exe(`git rev-parse HEAD`).replace(/(\r\n|\n|\r)/gm,"");
+
+  const releases = await octokit.repos.listReleases({ owner, repo });
+
+  const report = await Report.dvc_report({ from, to, releases, templates });
+
+  return report;
+}
+
+const create_check_dvc_report = async (opts) => {
+  console.log("Creating DVC report");
+
+  const { summary } = opts;
+
+  const started_at = new Date();
+  const name = `DVC Report ${ uuid() }`;
+  const conclusion = 'success';
+  const title = 'DVC Report';
+
+  await octokit.checks.create({
+    owner,
+    repo,
+    head_sha: GITHUB_SHA,
+
+    started_at,
+    name,
+    conclusion,
+    completed_at: new Date(),
+    status: 'completed',
+    output: {
+      title,
+      summary
+    }
+  })
+}
+
+const upload_release_asset = async (url, filepath) => {
+  const stat = await fs.stat(filepath);
 
   if (!stat.isFile()) {
       console.log(`Skipping, ${filepath} its not a file`);
       return;
   }
 
-  const file = await readFile(filepath);
+  const file = await fs.readFile(filepath);
   const name = path.basename(filepath);
   // TODO: mime type
   const mime = "binary/octet-stream";
@@ -460,7 +199,6 @@ const octokit_upload_release_asset = async (url, filepath) => {
       },
   });
 }
-
 
 const create_release = async (opts) => {
   const { body } = opts;
@@ -479,12 +217,11 @@ const create_release = async (opts) => {
 
   // TODO: promisify all
   for (idx in release_files) {
-    await octokit_upload_release_asset(release.data.upload_url, release_files[idx]);
+    await upload_release_asset(release.data.upload_url, release_files[idx]);
   }
 }
 
-const run_action = async () => {
-
+const run = async () => {
   try {
     if (IS_PR) {
       const checks = await octokit.checks.listForRef({
@@ -494,44 +231,27 @@ const run_action = async () => {
       });
 
       if (checks.data.check_runs.filter(check => {
-
         return check.name.includes(`${GITHUB_WORKFLOW}`)
-      
       }).length > 1) {
         console.log('This branch is running or has runned another check. Cancelling...');
         return
       }
-    }
 
-    if (( await has_skip_ci() )) return;
-
-    await install_dependencies();
-
-    if (IS_PR) {
       try {
         await exe(`git checkout origin/${GITHUB_HEAD_REF}`);
         await exe(`dvc checkout`);
       } catch (err) {}
     }
 
-    await init_remote();
+    if (( await has_skip_ci() )) return;
+
+    await install_dependencies();
+    await DVC.init_remote();
 
     const repro_runned = await run_repro();
+    const report = await dvc_report();
 
-    let from = IS_PR ? await exe(`git log -n 1 origin/${GITHUB_BASE_REF} --pretty=format:%H`) 
-      : github.context.payload.before;
-
-    if (from === '0000000000000000000000000000000000000000')
-      from = await exe(`git rev-parse HEAD^`);
-
-    const to = await exe(`git rev-parse HEAD`);
-
-    const report = await check_dvc_report_summary({ 
-      from: from.replace(/(\r\n|\n|\r)/gm, ""), 
-      to: to.replace(/(\r\n|\n|\r)/gm,"") 
-    });
-
-    await check_dvc_report({ summary: report });
+    await create_check_dvc_report({ summary: report });
 
     if (!release_skip && repro_runned)
       await create_release({ body: report });
@@ -541,4 +261,4 @@ const run_action = async () => {
   }
 }
 
-run_action();
+run();
