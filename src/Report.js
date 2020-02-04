@@ -64,6 +64,8 @@ const dvc_report_metrics_diff_md = async () => {
   
     try {
       const dvc_out = DVC.metrics_diff();
+
+      console.log(dvc_out);
       
       const diff = [];
       for (path in dvc_out) {
@@ -155,9 +157,10 @@ const dvc_report_others = async (opts) => {
     const dvc_releases = releases.data.filter(release => release.name && release.name.includes('DVC')); 
     const links = dvc_releases.map(release => `[${release.tag_name}](${release.html_url})`).join(', ');
   
-    const summary = `<details><summary>Experiments</summary>\n\n${links}\n</details>`;
+    if (links && links.length)
+        return `<details><summary>Experiments</summary>\n\n${links}\n</details>`;
   
-    return summary;
+    return 'No other experiments found';
 }
 
 const dvc_report = async (opts) => {
@@ -167,7 +170,7 @@ const dvc_report = async (opts) => {
     const vegametrics = await dvc_report_vegametrics_md(opts);
     const others = await dvc_report_others(opts);
     
-    const summary = `### Data \n${data} \n### Metrics \n${metrics_diff} \n${vegametrics} \n### Other experiments \n${others}`;
+    const summary = `### Data \n\n${data} \n\n### Metrics \n\n ${metrics_diff} \n\n ${vegametrics} \n\n### Other experiments \n${others}`;
   
     console.log(summary);
 
