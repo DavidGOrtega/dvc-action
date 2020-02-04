@@ -219,14 +219,15 @@ const diff = async (from, to) => {
   console.log(dvc_out);
   console.log([from, to]);
   //1799 files untouched, 0 files modified, 1000 files added, 1 file deleted, size was increased by 23.0 MB
-  const regex = /(\d+) files? untouched, (\d+) files? modified, (\d+) files? added, (\d+) files? deleted/g;
+  // const regex = /(\d+) files? untouched, (\d+) files? modified, (\d+) files? added, (\d+) files? deleted/g;
+  //files summary: 15 added, 2 deleted, 1 modified
+  const regex = /files summary: (\d+) added, (\d+) deleted, (\d+) modified/g;
   const match = regex.exec(dvc_out);
 
   return {
-      unmodified: mock_outs(match[1]),
+      added: mock_outs(match[0]),
+      deleted: mock_outs(match[1]),
       modified: mock_outs(match[2]),
-      added: mock_outs(match[3]),
-      deleted: mock_outs(match[4]),
   };
 }
 
