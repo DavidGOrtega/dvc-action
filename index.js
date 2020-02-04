@@ -1,234 +1,174 @@
-const core = require('@actions/core')
-const github = require('@actions/github')
-
-const util = require('util')
-const exec = util.promisify(require('child_process').exec)
-const fs = require('fs').promises
-
+const { uuid, exec, fs } = require('./src/utils')
 const DVC = require('./src/Dvc');
 const Report = require('./src/Report');
 
-const github_token = core.getInput('github_token');
-const dvc_repro_file = core.getInput('dvc_repro_file');
-const release_skip = core.getInput('release_skip')  === 'true';
-const release_files = core.getInput('release_files') ? core.getInput('release_files').split(/[ ,]+/) : [];
-const release_files = core.getInput('templates') ? core.getInput('vega_templates').split(/[ ,]+/) : [];
-const skip_ci = core.getInput('skip_ci');
+const core = require('@actions/core')
+const github = require('@actions/github')
 
+const GITHUB_TOKEN = core.getInput('github_token');
 const {
   GITHUB_REPOSITORY,
-  GITHUB_HEAD_REF,
   GITHUB_EVENT_NAME,
   GITHUB_WORKFLOW,
+  GITHUB_HEAD_REF,
+  GITHUB_REF,
+  GITHUB_HEAD_SHA,
+  GITHUB_SHA,
 } = process.env;
 
-const IS_PR = GITHUB_EVENT_NAME === 'pull_request';
-const GITHUB_SHA = IS_PR ? github.context.payload.pull_request.head.sha : process.env.GITHUB_SHA
+const octokit = new github.GitHub(GITHUB_TOKEN);
 
-const [owner, repo] = GITHUB_REPOSITORY.split('/');
-const octokit = new github.GitHub(github_token);
+const IS_PR = GITHUB_EVENT_NAME === 'pull_request';
+const HEAD_SHA = GITHUB_HEAD_SHA;
+const SHA = GITHUB_SHA;
+const BASE_REF = GITHUB_BASE_REF;
+const HEAD_REF = GITHUB_HEAD_REF;
+const REF = GITHUB_REF;
+const [OWNER, REPO] = GITHUB_REPOSITORY.split('/');
+
+const DVC_REPRO_FILE = core.getInput('dvc_repro_file');
+const TEMPLATES = core.getInput('vega_templates') ? core.getInput('vega_templates').split(/[ ,]+/) : [];
+const RELEASE_FILES = core.getInput('release_files') ? core.getInput('release_files').split(/[ ,]+/) : [];
+const RELEASE_SKIP = core.getInput('release_skip')  === 'true';
+const SKIP_CI = core.getInput('skip_ci');
 
 // console.log(process.env);
 // console.log(github.context);
 // console.log(github.context.payload);
  
-const exe = async (command, quiet) => {
-  const { stdout, stderr } = await exec(command);
-
-  if (!quiet) {
-    console.log(`\nCommand: ${command}`);
-    console.log(`\t\t${stdout}`);
-    console.log(`\t\t${stderr}`);
-  }
-   
-  return stdout;
+const has_skip_ci = async (skip_ci) => {
+  const last_log = await exec('git log -1');
+  return last_log.includes(skip_ci);
 }
 
-const uuid = () =>{
-  return new Date().getUTCMilliseconds()
-}
+const run_repro = async (opts) => {
+  const { dvc_repro_file, user_email, user_name, skip_ci, remote, ref } = opts;
 
-const has_skip_ci = async () => {
-  console.log('Checking skip');
-  const last_log = await exe('git log -1');
-  
-  if (last_log.includes(skip_ci)) {
-    console.log(`${skip_ci} found! skipping task`);
-    return true;
-  }
-
-  return false;
-}
-
-const install_dependencies = async () => {
-  try {
-    await exe('dvc');
-  } catch(err) {
-    console.log('installing dvc...');
-    await exe('pip uninstall -y enum34');
-    await exe('pip install --quiet dvc[all]');
-  }
-}
-
-// TODO: make it non Github dependant
-const run_repro = async () => {
-  let repro_runned = false;
+  console.log(`Running dvc repro ${dvc_repro_file}`);
 
   if (dvc_repro_file === 'None') {
-    console.log('DVC repro skipped');
-    return;
+    console.log('DVC repro skipped by None');
+    return false;
   }
 
-  const dvc_repro_file_exists = fs.existsSync(dvc_repro_file);
+  const file_exists = await fs.exists(dvc_repro_file);
+  if (!file_exists) throw new Error(`DVC repro file ${dvc_repro_file} not found`);
 
-  if (!dvc_repro_file_exists) 
-    throw new Error(`DVC repro file ${dvc_repro_file} not found`);
+  const dvc_repro = DVC.repro(dvc_repro_file);
+  const repro_ran = !dvc_repro.includes('pipelines are up to date');
 
-  console.log(`echo Running dvc repro ${dvc_repro_file}`);
-  // TODO: try since dvc uses the stderr to WARNING: Dependency of changed because it is 'modified'. 
-  try {
-    await exe(`dvc repro ${dvc_repro_file}`);
-  } catch (err) {
-    console.log(err.message); 
-  }
+  if (repro_ran) {
+    console.log('dvc repro ran, updating remotes');
+    await exec('dvc commit -f');
+
+    await exec(`git config --local user.email "${user_email}"`);
+    await exec(`git config --local user.name "${user_name}"`);
+    await exec(`git add --all`);
+    await exec(`git commit -a -m "dvc repro ${skip_ci}"`);
+
+    await exec('dvc push');
+
+    await exec(`git remote add remote "${remote}"`, { throw_err: false });
+    await exec(`git push remote HEAD:${ref}`, { throw_err: false });
   
-  // TODO: review, dvc lock changes for git
-  const git_status = await exe(`git status`);
-  const git_changed = !git_status.includes('up to date');
-  const dvc_status = await exe(`dvc status -c`);
-  const dvc_changed = !dvc_status.includes('up to date');
-  if (/*git_changed ||*/ dvc_changed) {
+  } else 
+    console.log('pipelines are up to date');
 
-    console.log('DVC commit');
-    await exe('dvc commit -f');
-
-    // TODO: review git add --all required because of metrics files. Should it not be tracked by dvc?
-    console.log('Git commit');
-    await exe(`
-      git config --local user.email "action@github.com"
-      git config --local user.name "GitHub Action"
-      git add --all
-      git commit -a -m "dvc repro ${skip_ci}"
-    `);
-
-    const has_dvc_remote = await DVC.has_remote();
-    if (has_dvc_remote) {
-      console.log('DVC Push');
-      await exe('dvc push');
-    }
-
-    console.log('Git push');
-    try {
-    await exe(`
-      git remote add github "https://$GITHUB_ACTOR:${github_token}@github.com/$GITHUB_REPOSITORY.git"
-      git push github HEAD:${IS_PR ? GITHUB_HEAD_REF : GITHUB_REF}
-    `);
-    }catch (err) {}
-
-    repro_runned = true;
-  }
-
-  return repro_runned;
+  return repro_ran;
 }
 
-const dvc_report = async () => {
-  let from = IS_PR ? await exe(`git log -n 1 origin/${GITHUB_BASE_REF} --pretty=format:%H`) 
-  : github.context.payload.before;
+const dvc_report = async (opts) => {
+  const sanitize = (str) => str.replace(/(\r\n|\n|\r)/gm, "");
 
-  if (from === '0000000000000000000000000000000000000000')
-    from = await exe(`git rev-parse HEAD^`);
+  const { templates } = opts;
 
-  from = from.replace(/(\r\n|\n|\r)/gm, "")
+  const releases = await octokit.repos.listReleases({ OWNER, REPO });
 
-  const to = await exe(`git rev-parse HEAD`).replace(/(\r\n|\n|\r)/gm,"");
+  // BASE_SHA VS SHA
+  const from = sanitize(IS_PR ? 
+    await exec(`git log -n 1 origin/${BASE_REF} --pretty=format:%H`) : 
+    await exec(`git rev-parse HEAD^`));
 
-  const releases = await octokit.repos.listReleases({ owner, repo });
+  const to = IS_PR ? HEAD_SHA : sanitize(await exec(`git rev-parse HEAD`));
 
-  const report = await Report.dvc_report({ from, to, releases, templates });
+  const report = await Report.dvc_report({ from, to, templates, releases });
 
   return report;
 }
 
 const create_check_dvc_report = async (opts) => {
   console.log("Creating DVC report");
+  const { head_sha, report, title = 'DVC Report' } = opts;
 
-  const { summary } = opts;
-
+  const name = `${title} ${uuid()}`;
   const started_at = new Date();
-  const name = `DVC Report ${ uuid() }`;
-  const conclusion = 'success';
-  const title = 'DVC Report';
-
-  await octokit.checks.create({
-    owner,
-    repo,
-    head_sha: GITHUB_SHA,
-
-    started_at,
+  const completed_at = new Date();
+  const summary = report;
+  
+  const check = await octokit.checks.create({
+    OWNER,
+    REPO,
+    head_sha,
     name,
-    conclusion,
-    completed_at: new Date(),
+    started_at,
+    completed_at,
+    conclusion: 'success',
     status: 'completed',
-    output: {
-      title,
-      summary
-    }
+    output: { title, summary }
   })
-}
 
-const upload_release_asset = async (url, filepath) => {
-  const stat = await fs.stat(filepath);
-
-  if (!stat.isFile()) {
-      console.log(`Skipping, ${filepath} its not a file`);
-      return;
-  }
-
-  const file = await fs.readFile(filepath);
-  const name = path.basename(filepath);
-  // TODO: mime type
-  const mime = "binary/octet-stream";
-
-  await octokit.repos.uploadReleaseAsset({
-      url,
-      name,
-      file,
-      headers: {
-          "content-type": mime,
-          "content-length": stat.size
-      },
-  });
+  return check;
 }
 
 const create_release = async (opts) => {
-  const { body } = opts;
+  const { head_sha, report, release_files } = opts;
 
-  const tag_name = GITHUB_SHA.slice(0, 7);
+  const tag_name = head_sha.slice(0, 7);
+  const name = `${tag_name} DVC Release`;
+  const body = report;
 
-  const release = await octokit.repos.createRelease({
-      owner,
-      repo,
-      name: `${tag_name} DVC Release`,
-      head_sha: GITHUB_SHA,
+  const release = await octokit.repos.createRelease(
+    { OWNER, REPO, head_sha, tag_name, name, body });
 
-      tag_name,
-      body
-  });
+  // assets
+  const upload_asset = async (url, filepath) => {
+    const stat = await fs.stat(filepath);
+  
+    if (!stat.isFile()) {
+        console.log(`Skipping, ${filepath} its not a file`);
+        return;
+    }
+  
+    const name = path.basename(filepath);
+    const file = await fs.readFile(filepath);
+    const mime = "binary/octet-stream"; // TODO: mime type
+    const headers = { "content-type": mime, "content-length": stat.size };
+
+    await octokit.repos.uploadReleaseAsset({ url, name, file, headers });
+  }
 
   // TODO: promisify all
   for (idx in release_files) {
-    await upload_release_asset(release.data.upload_url, release_files[idx]);
+    await upload_asset(release.data.upload_url, release_files[idx]);
   }
+
+  return release;
 }
 
 const run = async () => {
+  const ref = IS_PR ? HEAD_REF : REF;
+  const head_sha = IS_PR ? HEAD_SHA : SHA;
+
+  const dvc_repro_file = DVC_REPRO_FILE;
+  const user_email = 'action@github.com';
+  const user_name = 'GitHub Action';
+  const remote = `https://${OWNER}:${GITHUB_TOKEN}@github.com/${OWNER}/${REPOSITORY}.git`;
+  const skip_ci = SKIP_CI;
+
   try {
+
     if (IS_PR) {
-      const checks = await octokit.checks.listForRef({
-        owner,
-        repo,
-        ref: GITHUB_SHA
-      });
+      const checks = await octokit.checks.listForRef({ OWNER, REPO, ref });
 
       if (checks.data.check_runs.filter(check => {
         return check.name.includes(`${GITHUB_WORKFLOW}`)
@@ -236,25 +176,33 @@ const run = async () => {
         console.log('This branch is running or has runned another check. Cancelling...');
         return
       }
+    }
 
+    if (IS_PR) {
       try {
-        await exe(`git checkout origin/${GITHUB_HEAD_REF}`);
-        await exe(`dvc checkout`);
+        await exec(`git checkout origin/${ref}`);
+        await exec(`dvc checkout`);
       } catch (err) {}
     }
 
-    if (( await has_skip_ci() )) return;
+    const do_skip = await has_skip_ci(skip_ci);
+    if (do_skip) {
+      console.log(`${skip_ci} found; skipping task`);
+      return;
+    } 
 
-    await install_dependencies();
+    await DVC.setup();
     await DVC.init_remote();
 
-    const repro_runned = await run_repro();
+    const repro_ran = await run_repro(
+      { dvc_repro_file, user_email, user_name, skip_ci, remote, ref });
+
     const report = await dvc_report();
 
-    await create_check_dvc_report({ summary: report });
+    await create_check_dvc_report({ head_sha, report, templates: TEMPLATES });
 
-    if (!release_skip && repro_runned)
-      await create_release({ body: report });
+    if (!RELEASE_SKIP && repro_ran)
+      await create_release({ head_sha, report, release_files: RELEASE_FILES });
   
   } catch (error) {
     core.setFailed(error.message);

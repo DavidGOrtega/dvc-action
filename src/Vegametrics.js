@@ -1,8 +1,5 @@
 const path = require('path')
-const util = require('util')
-const exec = util.promisify(require('child_process').exec)
-const fs = require('fs').promises
-
+const { exec, fs } = require('./utils')
 const DVC = require('./Dvc')
 const Graph = require('./Graph').Graph
 
@@ -124,6 +121,7 @@ class VegaMetricsDataset {
                 }
     
                 await old();
+                await current();
             }
     
             if (!rev || rev === 'current') 

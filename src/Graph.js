@@ -1,14 +1,9 @@
-
-const util = require('util')
 const PATH = require('path')
-const glob = util.promisify(require('glob'));
-const fs = require('fs').promises;
 const _ = require('underscore');
 const vega = require('vega');
 const vegalite = require('vega-lite');
 
-const imgur = require('imgur')
-imgur.setClientId('9ae2688f25fae09');
+const { upload_image, uuid, glob, fs } = require('./utils')
 
 class Graph {
     constructor() {
@@ -27,11 +22,9 @@ class Graph {
     }
 
     toMd = async () => {
-        const path = `./${new Date().getUTCMilliseconds()}.png`;
+        const path = `./${uuid()}.png`;
         await this.toImage({ path });
-
-        const imgur_resp = await imgur.uploadFile(path);
-        const image_uri = imgur_resp.data.link;
+        const image_uri = await upload_image(path);
         fs.unlink(path);
 
         return `![${this.path}](${image_uri})`;
@@ -109,8 +102,6 @@ class Graph {
         }  
         
         this.data.data = new_data;
-        this.data.encoding.color = { "field": "@experiment", "type": "nominal" };
-        this.data.opacity = { value: 0.2 };
 
         this.values.concat(values);
     }
