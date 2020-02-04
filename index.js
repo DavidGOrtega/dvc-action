@@ -198,9 +198,9 @@ const run = async () => {
     const repro_ran = await run_repro(
       { dvc_repro_file, user_email, user_name, skip_ci, remote, ref });
 
-    const report = await dvc_report();
+    const report = await dvc_report({ templates: TEMPLATES });
 
-    await create_check_dvc_report({ head_sha, report, templates: TEMPLATES });
+    await create_check_dvc_report({ head_sha, report });
 
     if (!RELEASE_SKIP && repro_ran)
       await create_release({ head_sha, report, release_files: RELEASE_FILES });
