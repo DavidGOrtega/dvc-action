@@ -65,8 +65,6 @@ const dvc_report_metrics_diff_md = async () => {
     try {
       const dvc_out = await DVC.metrics_diff();
 
-      console.log(dvc_out);
-      
       const diff = [];
       for (path in dvc_out) {
           const output = dvc_out[path];
@@ -125,6 +123,9 @@ const dvc_report_metrics_md = async (opts) => {
 
 const dvc_report_vegametrics_md = async (opts) => {
     const { templates } = opts;
+
+    console.log("templates");
+    console.log(templates);
 
     let summary = '';
     if (templates && templates.length) {
