@@ -215,9 +215,7 @@ const diff = async (from, to) => {
   }
 
   const dvc_out = await exec(`dvc diff ${from} ${to}`, { throw_err: false});
-
-  console.log(dvc_out);
-  console.log([from, to]);
+  
   //1799 files untouched, 0 files modified, 1000 files added, 1 file deleted, size was increased by 23.0 MB
   // const regex = /(\d+) files? untouched, (\d+) files? modified, (\d+) files? added, (\d+) files? deleted/g;
   //files summary: 15 added, 2 deleted, 1 modified

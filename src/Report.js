@@ -44,12 +44,12 @@ const dvc_report_data_md = async (opts) => {
         summary = '';
         sections.forEach(section => {
             summary += `<details>
-            <summary>${section.lbl} files: ${section.total}</summary>\n\n`;
+            <summary>${section.lbl} files: ${section.files.length}</summary>\n`;
 
             section.files.forEach(file => 
                 summary += `  - ${file.path}\t\t${file.size}Mb\n`)
 
-            summary += `</details>`;
+            summary += `</details>\n`;
         });
 
     } catch (err) {
@@ -167,18 +167,7 @@ const dvc_report = async (opts) => {
     const vegametrics = await dvc_report_vegametrics_md(opts);
     const others = await dvc_report_others(opts);
     
-    const summary = 
-    `### Data \n
-    ${data}  
-    
-    ### Metrics \n
-    ${metrics_diff} \n
-    
-    ${vegametrics} \n
-  
-    ### Other experiments \n
-    ${others}
-    `;
+    const summary = `### Data \n${data} \n### Metrics \n${metrics_diff} \n${vegametrics} \n### Other experiments \n${others}`;
   
     console.log(summary);
 
