@@ -63,7 +63,7 @@ const dvc_report_metrics_diff_md = async () => {
     let summary = 'No metrics difference available';
   
     try {
-      const dvc_out = DVC.metrics_diff();
+      const dvc_out = await DVC.metrics_diff();
 
       console.log(dvc_out);
       
