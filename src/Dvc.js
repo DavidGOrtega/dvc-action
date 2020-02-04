@@ -15,7 +15,7 @@ const setup = async () => {
 }
 
 const init_remote = async () => {
-  const dvc_remote_list = await exec('dvc remote list', { throw_err: false }).toLowerCase();
+  const dvc_remote_list = (await exec('dvc remote list', { throw_err: false })).toLowerCase();
   const has_dvc_remote = dvc_remote_list.length > 0;
 
   if (!has_dvc_remote) { 
