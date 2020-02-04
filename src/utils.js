@@ -17,7 +17,7 @@ const exec = async (command, opts) => {
   const { debug, throw_err = true } = opts || {};
   const { stdout, stderr } = await execp(command);
 
-  if (true || debug) 
+  if (debug) 
     console.log(`\nCommand: ${command}\n\t${stdout}\n\t${stderr}`);
 
   if (throw_err && stderr) throw new Error(stderr);
@@ -26,7 +26,7 @@ const exec = async (command, opts) => {
 }
 
 const uuid = () => {
-  return new Date().getUTCMilliseconds()
+  return `${new Date().getUTCMilliseconds()}`
 }
 
 const imgur = require('imgur')
