@@ -9,7 +9,7 @@ const setup = async () => {
 
   } catch(err) {
     console.log('installing dvc...');
-    await exec('pip uninstall -y enum34');
+    await exec('pip uninstall -y enum34', { throw_err: false });
     await exec('pip install --quiet dvc[all]');
   }
 }

@@ -204,9 +204,7 @@ const run = async () => {
 
     if (!RELEASE_SKIP && repro_ran)
       await create_release({ head_sha, report, release_files: RELEASE_FILES });
-  
-    
-    throw new Error('Easy debug'); 
+
   } catch (error) {
     core.setFailed(error.message);
   }
