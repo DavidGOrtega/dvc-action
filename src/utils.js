@@ -17,7 +17,7 @@ const exec = async (command, opts) => {
   const { debug, throw_err = true } = opts || {};
   const { stdout, stderr } = await execp(command);
 
-  if (debug) 
+  if (true || debug) 
     console.log(`\nCommand: ${command}\n\t${stdout}\n\t${stderr}`);
 
   if (throw_err && stderr) throw new Error(stderr);
