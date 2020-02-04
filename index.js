@@ -55,7 +55,7 @@ const run_repro = async (opts) => {
   const file_exists = await fs.exists(dvc_repro_file);
   if (!file_exists) throw new Error(`DVC repro file ${dvc_repro_file} not found`);
 
-  const dvc_repro = await DVC.repro(dvc_repro_file, { debug: true });
+  const dvc_repro = await DVC.repro(dvc_repro_file);
   console.log(dvc_repro);
   const repro_ran = !dvc_repro.includes('pipelines are up to date');
 

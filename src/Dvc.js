@@ -104,7 +104,7 @@ const init_remote = async () => {
 }
 
 const repro = async (dvc_file) => {
-  return await exec(`dvc repro ${dvc_file}`, { throw_err: false });
+  return await exec(`dvc repro ${dvc_file}`, { throw_err: false, debug: true });
 }
 
 const get = async (opts) => {
