@@ -10,6 +10,7 @@ const {
   GITHUB_REPOSITORY,
   GITHUB_EVENT_NAME,
   GITHUB_WORKFLOW,
+  GITHUB_BASE_REF,
   GITHUB_HEAD_REF,
   GITHUB_REF,
   GITHUB_HEAD_SHA,
@@ -32,7 +33,7 @@ const RELEASE_FILES = core.getInput('release_files') ? core.getInput('release_fi
 const RELEASE_SKIP = core.getInput('release_skip')  === 'true';
 const SKIP_CI = core.getInput('skip_ci');
 
-// console.log(process.env);
+console.log(process.env);
 // console.log(github.context);
 // console.log(github.context.payload);
  
