@@ -25,7 +25,7 @@ const SHA = GITHUB_SHA;
 const BASE_REF = GITHUB_BASE_REF;
 const HEAD_REF = GITHUB_HEAD_REF;
 const REF = GITHUB_REF;
-const [OWNER, REPO] = GITHUB_REPOSITORY.split('/');
+const [owner, repo] = GITHUB_REPOSITORY.split('/');
 
 const DVC_REPRO_FILE = core.getInput('dvc_repro_file');
 const TEMPLATES = core.getInput('vega_templates') ? core.getInput('vega_templates').split(/[ ,]+/) : [];
@@ -83,7 +83,7 @@ const dvc_report = async (opts) => {
 
   const { templates } = opts;
 
-  const releases = await octokit.repos.listReleases({ OWNER, REPO });
+  const releases = await octokit.repos.listReleases({ owner, repo });
 
   // BASE_SHA VS SHA
   const from = sanitize(IS_PR ? 
@@ -107,8 +107,8 @@ const create_check_dvc_report = async (opts) => {
   const summary = report;
   
   const check = await octokit.checks.create({
-    OWNER,
-    REPO,
+    owner,
+    repo,
     head_sha,
     name,
     started_at,
@@ -129,7 +129,7 @@ const create_release = async (opts) => {
   const body = report;
 
   const release = await octokit.repos.createRelease(
-    { OWNER, REPO, head_sha, tag_name, name, body });
+    { owner, repo, head_sha, tag_name, name, body });
 
   // assets
   const upload_asset = async (url, filepath) => {
@@ -163,13 +163,13 @@ const run = async () => {
   const dvc_repro_file = DVC_REPRO_FILE;
   const user_email = 'action@github.com';
   const user_name = 'GitHub Action';
-  const remote = `https://${OWNER}:${GITHUB_TOKEN}@github.com/${OWNER}/${REPO}.git`;
+  const remote = `https://${owner}:${GITHUB_TOKEN}@github.com/${owner}/${repo}.git`;
   const skip_ci = SKIP_CI;
 
   try {
 
     if (IS_PR) {
-      const checks = await octokit.checks.listForRef({ OWNER, REPO, ref });
+      const checks = await octokit.checks.listForRef({ owner, repo, ref });
 
       if (checks.data.check_runs.filter(check => {
         return check.name.includes(`${GITHUB_WORKFLOW}`)
