@@ -180,6 +180,8 @@ const dvc_report = async (opts) => {
     ${others}
     `;
   
+    console.log(summary);
+
     return summary;
 }
 
