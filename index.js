@@ -163,7 +163,7 @@ const run = async () => {
   const dvc_repro_file = DVC_REPRO_FILE;
   const user_email = 'action@github.com';
   const user_name = 'GitHub Action';
-  const remote = `https://${OWNER}:${GITHUB_TOKEN}@github.com/${OWNER}/${REPOSITORY}.git`;
+  const remote = `https://${OWNER}:${GITHUB_TOKEN}@github.com/${OWNER}/${REPO}.git`;
   const skip_ci = SKIP_CI;
 
   try {
