@@ -1,5 +1,5 @@
 const { uuid, exec, fs } = require('./utils')
-const FIXTURES = require('./Fixtures').METRICS;
+const { METRICS, DVC_METRICS_DIFF_STUB } = require('./Fixtures');
 
 const STUB = process.env.STUB;
 
@@ -109,7 +109,7 @@ const repro = async (dvc_file) => {
 
 const get = async (opts) => {
   if (STUB)
-    return JSON.stringify(FIXTURES[opts.rev ? `${opts.input}@${opts.rev}` : opts.input]);
+    return JSON.stringify(METRICS[opts.rev ? `${opts.input}@${opts.rev}` : opts.input]);
 
   const output_tmp = `./get_${uuid()}`;
   const { input, rev, output = output_tmp, url = './' } = opts;
