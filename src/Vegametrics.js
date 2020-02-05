@@ -94,6 +94,11 @@ class VegaMetricsDataset {
                 const { rev, name } = opts;
                 const data = await DVC.get({ input, rev });
         
+                if (rev === 'current')
+                    console.log("current " + data);
+
+                if (rev === 'old')
+                    console.log("old " + data);
                 this.data = this.data.concat(expand(JSON.parse(data), name));
             }
     
