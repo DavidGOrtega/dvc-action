@@ -117,9 +117,9 @@ const get = async (opts) => {
   console.log(`dvc get --rev ${rev} -o ${output} ${url} ${input}`);
   try {
       if (rev)
-          await exec(`dvc get --rev ${rev} -o ${output} ${url} ${input}`, { throw_err: false});
+          await exec(`dvc get --rev ${rev} -o ${output} ${url} ${input}`, { throw_err: false, debug: true });
       else 
-          await exec(`dvc get -o ${output} ${url} ${input}`, { throw_err: false});
+          await exec(`dvc get -o ${output} ${url} ${input}`, { throw_err: false });
 
       const data = await fs.readFile(output, "utf8");
 
