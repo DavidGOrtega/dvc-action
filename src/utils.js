@@ -26,7 +26,7 @@ const exec = async (command, opts) => {
 }
 
 const uuid = () => {
-  return `${new Date().getUTCMilliseconds()}`
+  return String(new Date().getUTCMilliseconds());
 }
 
 const imgur = require('imgur')

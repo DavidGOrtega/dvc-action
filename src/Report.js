@@ -132,7 +132,7 @@ const dvc_report_vegametrics_md = async (opts) => {
         try {
             for (idx in templates) {
                 const template = templates[idx];
-                const output = PATH.join('./', `${uuid()}`);
+                const output = PATH.join('./', uuid());
                 await vegametrics({ input: template, output });
                 const sectionmark = await image2Md(PATH.join(output, 'graph.png'));
 

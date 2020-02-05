@@ -70,8 +70,12 @@ const run_repro = async (opts) => {
 
     await exec('dvc push');
 
+    const tag = uuid();
     await exec(`git remote add remote "${remote}"`, { throw_err: false });
     await exec(`git push remote HEAD:${ref}`, { throw_err: false });
+    await exec(`git tag ${tag}`, { throw_err: false });
+    await exec(`git push remote ${tag}`, { throw_err: false });
+
   
   } else 
     console.log('pipelines are up to date');
