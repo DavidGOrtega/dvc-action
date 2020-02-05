@@ -64,6 +64,9 @@ class VegaMetricsDataset {
             this.scalars = true;
 
             const data = await DVC.metrics_show({ all: true });
+
+            //const { hash } = await exec(`git rev-parse HEAD^`);
+            //const data = await DVC.get({ input, rev });
                     
             for (let revision in data) {
                 let merged_obj = {};
@@ -100,6 +103,10 @@ class VegaMetricsDataset {
     
             const old = async () => { 
                 try {
+                    console.log("generating old"); 
+                    console.log(await exec(`git rev-parse HEAD^`)); 
+                    console.log(await exec(`git rev-parse HEAD`)); 
+
                     const { hash } = await exec(`git rev-parse HEAD^`);
                     await add_rev({ rev: hash, name: 'old' });
     
