@@ -176,7 +176,6 @@ const metrics_show = async (opts) => {
     }
   }
 
-  console.log(metrics);
   const out = {};
   for (rev in metrics) {
     if (all || rev === 'current') {
@@ -226,9 +225,9 @@ const diff = async (from, to) => {
   console.log(match);
 
   return {
-      added: mock_outs(match[0]),
-      deleted: mock_outs(match[1]),
-      modified: mock_outs(match[2]),
+      added: mock_outs(match[1]),
+      deleted: mock_outs(match[2]),
+      modified: mock_outs(match[3]),
   };
 }
 
