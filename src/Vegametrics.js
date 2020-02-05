@@ -108,7 +108,7 @@ class VegaMetricsDataset {
     
             const old = async () => { 
                 try {
-                    const hash = await exec(`git rev-parse HEAD^`);
+                    const hash = (await exec(`git rev-parse HEAD^`)).replace(/(\r\n|\n|\r)/gm, "");
                     await add_rev({ rev: hash, name: 'old' });
     
                 } catch(err) {
