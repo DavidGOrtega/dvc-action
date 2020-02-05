@@ -47,7 +47,7 @@ const dvc_report_data_md = async (opts) => {
             <summary>${section.lbl} files: ${section.files.length}</summary>\n`;
 
             section.files.forEach(file => 
-                summary += `    - ${file.path}\t\t${file.size}Mb\n`)
+                summary += `\s-\s${file.path}\t\t${file.size}Mb \n`)
 
             summary += `</details>\n`;
         });
