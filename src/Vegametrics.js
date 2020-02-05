@@ -103,7 +103,8 @@ class VegaMetricsDataset {
             }
     
             const current = async () => {
-                await add_rev({ name: 'current' })
+                const { hash } = await exec(`git rev-parse HEAD`);
+                await add_rev({ rev: hash, name: 'current' })
             }
     
             const old = async () => { 
