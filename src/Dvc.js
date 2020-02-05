@@ -114,6 +114,7 @@ const get = async (opts) => {
   const output_tmp = `./get_${uuid()}`;
   const { input, rev, output = output_tmp, url = './' } = opts;
 
+  console.log(`dvc get --rev ${rev} -o ${output} ${url} ${input}`);
   try {
       if (rev)
           await exec(`dvc get --rev ${rev} -o ${output} ${url} ${input}`, { throw_err: false});
