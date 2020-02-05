@@ -103,17 +103,12 @@ class VegaMetricsDataset {
             }
     
             const current = async () => {
-                const { hash } = await exec(`git rev-parse HEAD`);
-                await add_rev({ rev: hash, name: 'current' })
+                await add_rev({ name: 'current' })
             }
     
             const old = async () => { 
                 try {
-                    console.log("generating old"); 
-                    console.log(await exec(`git rev-parse HEAD^`)); 
-                    console.log(await exec(`git rev-parse HEAD`)); 
-
-                    const { hash } = await exec(`git rev-parse HEAD^`);
+                    const hash = await exec(`git rev-parse HEAD^`);
                     await add_rev({ rev: hash, name: 'old' });
     
                 } catch(err) {
