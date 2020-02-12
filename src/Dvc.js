@@ -40,7 +40,7 @@ const init_remote = async () => {
   }
 
   // Aliyn
-  if(dvc_remote_list.includes('azure://')) {
+  if(dvc_remote_list.includes('oss://')) {
     const { OSS_BUCKET, OSS_ACCESS_KEY_ID, OSS_ACCESS_KEY_SECRET, OSS_ENDPOINT } = process.env;
     if (!OSS_BUCKET || !OSS_ACCESS_KEY_ID || !OSS_ACCESS_KEY_SECRET || !OSS_ENDPOINT) {
       console.log(`:warning: Aliyin dvc remote found but no credentials found`);
@@ -108,34 +108,26 @@ const repro = async (dvc_file) => {
 }
 
 const get = async (opts) => {
-  if (STUB)
-    return JSON.stringify(METRICS[opts.rev ? `${opts.input}@${opts.rev}` : opts.input]);
-
   const output_tmp = `./get_${uuid()}`;
   const { input, rev, output = output_tmp, url = './' } = opts;
 
-  console.log(`dvc get --rev ${rev} -o ${output} ${url} ${input}`);
-  try {
-      if (rev)
-          await exec(`dvc get --rev ${rev} -o ${output} ${url} ${input}`, { throw_err: false, debug: true });
-      else 
-          await exec(`dvc get -o ${output} ${url} ${input}`, { throw_err: false });
+  const command = rev ? `dvc get --rev ${rev} -o ${output} ${url} ${input}` 
+    : `dvc get -o ${output} ${url} ${input}`;
 
-      const data = await fs.readFile(output, "utf8");
+  await exec(command, { throw_err: false });
+  const data = await fs.readFile(output, "utf8");
 
-      return data;
+  if (output_tmp === output)
+    await fs.unlink(output);
 
-  } finally {
-      if (output_tmp === output)
-        await fs.unlink(output);
-  }
+  return data;
 }
 
 const metrics_show = async (opts) => {
   const { all } = opts;
   const metrics = {};
 
-  const dvc_out = await exec('dvc metrics show -a', { throw_err: false});
+  const dvc_out = await exec('dvc metrics show -a', { throw_err: false });
 
   const lines = dvc_out.split('\n');
   let branch;
@@ -193,6 +185,9 @@ const metrics_show = async (opts) => {
   return out;
 }
 
+
+
+
 const metrics_diff = async () => {
   return DVC_METRICS_DIFF_STUB;
       
@@ -220,10 +215,6 @@ const diff = async (from, to) => {
   //files summary: 15 added, 2 deleted, 1 modified
   const regex = /files summary: (\d+) added, (\d+) deleted, (\d+) modified/g;
   const match = regex.exec(dvc_out);
-
-  console.log(`dvc diff ${from} ${to}`);
-  console.log("dvc out: " + dvc_out);
-  console.log(match);
 
   return {
       added: mock_outs(match[1]),

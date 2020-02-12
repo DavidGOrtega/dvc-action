@@ -1,6 +1,7 @@
 const util = require('util')
 const fs = require('fs').promises
 const glob = util.promisify(require('glob'))
+const path = require('path')
 
 fs.exists = async (file) => {
   try {

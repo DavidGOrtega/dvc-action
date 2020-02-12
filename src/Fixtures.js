@@ -1,5 +1,5 @@
 
-const DVC_METRICS_DIFF_STUB = {"metrics.json": {"types.top5-error": {"old": 0.525454, "new": 0.5254552, "diff": 1.2000000000345068e-06}, "error-rate": {"old": 0.192458, "new": 0.19655656, "diff": 0.004098560000000001}, "AUC": {"old": 0.674134, "new": 0.675554, "diff": 0.0014199999999999768}, "types.top10-error": {"old": 0.86642, "new": 0.86857, "diff": 0.0021499999999999853}}}
+const DVC_METRICS_DIFF_STUB = {"metrics.json": {"types.top5-error": {"old": 0.525454, "new": 0.5254552, "diff": 1.2000000000345068e-06}, "error-rate": {"old": 0.192458, "new": 0.182458, "diff": -0.01}, "AUC": {"old": 0.674134, "new": 0.675554, "diff": 0.0014199999999999768}, "types.top10-error": {"old": 0.86642, "new": 0.86857, "diff": 0.0021499999999999853}}}
 
 const METRICS = { 
     "history.json@current": 

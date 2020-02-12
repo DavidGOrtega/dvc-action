@@ -1,7 +1,7 @@
+const PATH = require('path')
 const json_2_mdtable = require('json-to-markdown-table2')
 const vega = require('vega')
 const vegalite = require('vega-lite')
-const PATH = require('path')
 
 const { upload_image, uuid, fs } = require('./utils')
 const DVC = require('./Dvc');
@@ -19,7 +19,7 @@ const vega2md = async (vega_json) => {
     const view = new vega.View(vega.parse(vega_data), {renderer: 'none'});
   
     const canvas = await view.toCanvas();
-  
+
     const path = `vega_${uuid()}.png`;
     await fs.writeFile(path, canvas.toBuffer());
     await fs.unlink(path);
@@ -70,7 +70,8 @@ const dvc_report_metrics_diff_md = async () => {
           const output = dvc_out[path];
           for (metric in output) {
               const value = output[metric]['new'];
-              const change = output[metric]['diff'];
+              const arrow = output[metric]['diff'] > 0 ? ':small_red_triangle:' : ':small_red_triangle_down:';
+              const change = `${arrow} ${output[metric]['diff']}`;
   
               diff.push({path, metric, value, change });
           }
@@ -124,9 +125,6 @@ const dvc_report_metrics_md = async (opts) => {
 const dvc_report_vegametrics_md = async (opts) => {
     const { templates } = opts;
 
-    console.log("templates");
-    console.log(templates);
-
     let summary = '';
     if (templates && templates.length) {
         try {
@@ -152,10 +150,12 @@ const dvc_report_vegametrics_md = async (opts) => {
     return 'No vegametrics available';
 }
 
-// TODO: data model of releases aree tied to github
+// TODO: data model of releases is tied to github
+// TODO: replace with tags
 const dvc_report_others = async (opts) => {
     const { releases } = opts;
-    const dvc_releases = releases.data.filter(release => release.name && release.name.includes('DVC')); 
+
+    const dvc_releases = releases.filter(release => release.name && release.name.includes('DVC')); 
     const links = dvc_releases.map(release => `[${release.tag_name}](${release.html_url})`).join(', ');
   
     if (links && links.length)
@@ -178,8 +178,44 @@ const dvc_report = async (opts) => {
     return summary;
 }
 
+const toHTML = (markdown) => `
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
+		<title>GitHub Markdown CSS demo</title>
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-css@0.1.1/index.min.css">
+		<style>
+			body {
+				box-sizing: border-box;
+				min-width: 200px;
+				max-width: 980px;
+				margin: 0 auto;
+				padding: 45px;
+			}
+		</style>
+	</head>
+	<body>
+        <div class="markdown-body" id="content">
+        </div>
+    </body>
+    <script src="https://cdn.jsdelivr.net/npm/showdown@1.9.1/dist/showdown.min.js"></script>
+    <script>
+const text = \`${markdown}\`;
+
+const converter = new showdown.Converter({ tables: true })
+converter.setFlavor('github');
+
+const html=converter.makeHtml(text);
+document.getElementById("content").innerHTML = html; 
+</script>
+</html>
+`;
+
 exports.image2Md = image2Md;
 exports.dvc_report = dvc_report;
+exports.toHTML = toHTML;
 
 exports.dvc_report_metrics_md = dvc_report_metrics_md;
 exports.dvc_report_vegametrics_md = dvc_report_vegametrics_md;

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const yargs = require('yargs')
-const { vegametrics } = require('./src/Vegametrics')
+const { vegametrics } = require('./../src/Vegametrics')
 
 const run = async (argv) => {
     try {
