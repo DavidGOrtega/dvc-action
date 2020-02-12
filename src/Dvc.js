@@ -128,7 +128,6 @@ const metrics_show = async (opts) => {
   const metrics = {};
 
   const dvc_out = await exec('dvc metrics show -a', { throw_err: false });
-  console.log(dvc_out);
 
   const lines = dvc_out.split('\n');
   let branch;
@@ -170,6 +169,8 @@ const metrics_show = async (opts) => {
     }
   }
 
+  console.log('metrics');
+  console.log(await exec('git branch'));
   console.log(metrics);
 
   const out = {};
