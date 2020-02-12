@@ -196,6 +196,7 @@ const run = async () => {
       return;
     } 
 
+    await exec('git fetch --all');
     await DVC.setup();
     await DVC.init_remote();
 
