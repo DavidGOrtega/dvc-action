@@ -128,6 +128,7 @@ const metrics_show = async (opts) => {
   const metrics = {};
 
   const dvc_out = await exec('dvc metrics show -a', { throw_err: false });
+  console.log(dvc_out);
 
   const lines = dvc_out.split('\n');
   let branch;
@@ -172,14 +173,15 @@ const metrics_show = async (opts) => {
   console.log(metrics);
 
   const out = {};
-  for (rev in metrics) {
-    if (all || rev === 'current') {
-        out[rev] = [];
+  for (branch in metrics) {
+    if (all || branch === 'current') {
+        out[branch] = [];
+        const rev = branch === 'current' ? null : branch;
 
-        await Promise.all( metrics[rev].map(async (path, idx)  => {
+        await Promise.all( metrics[branch].map(async (path, idx)  => {
             const data = await get({ rev, input: path });
 
-            out[rev][idx] = { path, data }
+            out[branch][idx] = { path, data }
         }));
     } 
   }
