@@ -64,7 +64,7 @@ class VegaMetricsDataset {
             this.scalars = true;
 
             const data = await DVC.metrics_show({ all: true });
-
+            
             //const { hash } = await exec(`git rev-parse HEAD^`);
             //const data = await DVC.get({ input, rev });
                     

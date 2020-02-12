@@ -96,7 +96,7 @@ const init_remote = async () => {
     // TODO: check if -f and try would be desirable
     // projects with repro without push data previously fails
     try {
-      await exec('dvc pull -f', { throw_err: false });
+      await exec('dvc pull -f', { throw_err: false, debug: true });
     } catch (err) {
       console.error('Failed pulling from remote');
     }
