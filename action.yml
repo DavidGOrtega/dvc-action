@@ -9,6 +9,12 @@ inputs:
     required: false
     default: 'Dvcfile'
 
+  vega_templates: 
+    required: false
+
+  release_files:
+    required: false
+
   release_skip: 
     required: false
     default: false

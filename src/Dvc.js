@@ -1,127 +1,233 @@
-const util = require('util')
-const exec = util.promisify(require('child_process').exec)
-const fs = require('fs').promises
+const { uuid, exec, fs } = require('./utils')
+const { METRICS, DVC_METRICS_DIFF_STUB } = require('./Fixtures');
 
-const FIXTURES = { 
-    "history.json@current": 
-    [
-        {"step":0, "accu":0, "loss":1, "val_accu":0, "val_loss":1}, 
-        {"step":1, "accu":0.3, "loss":0.8, "val_accu":0.35, "val_loss": 0.85}, 
-        {"step":3, "accu":0.6, "loss":0.6, "val_accu":0.65, "val_loss": 0.65}, 
-        {"step":4, "accu":0.8, "loss":0.3, "val_accu":0.85, "val_loss": 0.35}, 
-        {"step":5, "accu":0.9, "loss":0.1, "val_accu":0.95, "val_loss":0.15}
-    ],
-    "history.json@old": 
-    [
-        {"step":0, "accu":0, "loss":1, "val_accu":0, "val_loss":1}, 
-        {"step":1, "accu":0.3, "loss":0.8, "val_accu":0.35, "val_loss": 0.85}, 
-        {"step":3, "accu":0.6, "loss":0.6, "val_accu":0.65, "val_loss": 0.65}, 
-        {"step":4, "accu":0.8, "loss":0.3, "val_accu":0.85, "val_loss": 0.35}, 
-        {"step":5, "accu":0.9, "loss":0.1, "val_accu":0.95, "val_loss":0.15}
-    ],
-    "history.json": 
-    [
-        {"step":0, "accu":0, "loss":1, "val_accu":0, "val_loss":1}, 
-        {"step":1, "accu":0.3, "loss":0.8, "val_accu":0.35, "val_loss": 0.85}, 
-        {"step":3, "accu":0.6, "loss":0.6, "val_accu":0.65, "val_loss": 0.65}, 
-        {"step":4, "accu":0.8, "loss":0.3, "val_accu":0.85, "val_loss": 0.35}, 
-        {"step":5, "accu":0.9, "loss":0.1, "val_accu":0.95, "val_loss":0.15}
-    ],
-    "history.json@branch1": 
-    [
-        {"step":0, "accu":0, "loss":1, "val_accu":0, "val_loss":1}, 
-        {"step":1, "accu":0.4, "loss":0.9, "val_accu":0.4, "val_loss": 0.9}, 
-        {"step":3, "accu":0.5, "loss":0.7, "val_accu":0.5, "val_loss": 0.7}, 
-        {"step":4, "accu":0.6, "loss":0.5, "val_accu":0.6, "val_loss": 0.5}, 
-        {"step":5, "accu":0.8, "loss":0.3, "val_accu":0.8, "val_loss":0.3},
-    ],
-    "history.json@branch2": 
-    [
-        {"step":0, "accu":0, "loss":1, "val_accu":0, "val_loss":1}, 
-        {"step":1, "accu":0.35, "loss":0.7, "val_accu":0.5, "val_loss": 0.7}, 
-        {"step":3, "accu":0.66, "loss":0.5, "val_accu":0.6, "val_loss": 0.5}, 
-        {"step":4, "accu":0.88, "loss":0.2, "val_accu":0.9, "val_loss": 0.2}, 
-        {"step":5, "accu":0.99, "loss":0.05, "val_accu":0.99, "val_loss":0.05}
-    ]
+const STUB = process.env.STUB;
 
+const setup = async () => {
+  try {
+    await exec('dvc');
+
+  } catch(err) {
+    console.log('installing dvc...');
+    await exec('pip uninstall -y enum34', { throw_err: false });
+    await exec('pip install --quiet dvc[all]');
+  }
 }
 
-const FIXTURES2 = { 
-    "history.json": {
-        "current": 
-        [
-            {"step":0, "accu":0, "loss":1, "val_accu":0, "val_loss":1}, 
-            {"step":1, "accu":0.3, "loss":0.8, "val_accu":0.35, "val_loss": 0.85}, 
-            {"step":3, "accu":0.6, "loss":0.6, "val_accu":0.65, "val_loss": 0.65}, 
-            {"step":4, "accu":0.8, "loss":0.3, "val_accu":0.85, "val_loss": 0.35}, 
-            {"step":5, "accu":0.9, "loss":0.1, "val_accu":0.95, "val_loss":0.15}
-        ],
-        "old": 
-        [
-            {"step":0, "accu":0, "loss":1, "val_accu":0, "val_loss":1}, 
-            {"step":1, "accu":0.3, "loss":0.8, "val_accu":0.35, "val_loss": 0.85}, 
-            {"step":3, "accu":0.6, "loss":0.6, "val_accu":0.65, "val_loss": 0.65}, 
-            {"step":4, "accu":0.8, "loss":0.3, "val_accu":0.85, "val_loss": 0.35}, 
-            {"step":5, "accu":0.9, "loss":0.1, "val_accu":0.95, "val_loss":0.15}
-        ],
-        "master": 
-        [
-            {"step":0, "accu":0, "loss":1, "val_accu":0, "val_loss":1}, 
-            {"step":1, "accu":0.3, "loss":0.8, "val_accu":0.35, "val_loss": 0.85}, 
-            {"step":3, "accu":0.6, "loss":0.6, "val_accu":0.65, "val_loss": 0.65}, 
-            {"step":4, "accu":0.8, "loss":0.3, "val_accu":0.85, "val_loss": 0.35}, 
-            {"step":5, "accu":0.9, "loss":0.1, "val_accu":0.95, "val_loss":0.15}
-        ],
-        "branch1": 
-        [
-            {"step":0, "accu":0, "loss":1, "val_accu":0, "val_loss":1}, 
-            {"step":1, "accu":0.4, "loss":0.9, "val_accu":0.4, "val_loss": 0.9}, 
-            {"step":3, "accu":0.5, "loss":0.7, "val_accu":0.5, "val_loss": 0.7}, 
-            {"step":4, "accu":0.6, "loss":0.5, "val_accu":0.6, "val_loss": 0.5}, 
-            {"step":5, "accu":0.8, "loss":0.3, "val_accu":0.8, "val_loss":0.3},
-        ],
-        "branch2": 
-        [
-            {"step":0, "accu":0, "loss":1, "val_accu":0, "val_loss":1}, 
-            {"step":1, "accu":0.35, "loss":0.7, "val_accu":0.5, "val_loss": 0.7}, 
-            {"step":3, "accu":0.66, "loss":0.5, "val_accu":0.6, "val_loss": 0.5}, 
-            {"step":4, "accu":0.88, "loss":0.2, "val_accu":0.9, "val_loss": 0.2}, 
-            {"step":5, "accu":0.99, "loss":0.05, "val_accu":0.99, "val_loss":0.05}
-        ]
+const init_remote = async () => {
+  const dvc_remote_list = (await exec('dvc remote list', { throw_err: false })).toLowerCase();
+  const has_dvc_remote = dvc_remote_list.length > 0;
+
+  if (!has_dvc_remote) { 
+    console.log(':warning: Experiment does not have dvc remote!');
+    return;
+  }
+
+  // s3
+  if(dvc_remote_list.includes('s3://')) {
+    const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
+    if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
+      console.log(`:warning: S3 dvc remote found but no credentials found`);
     }
+  }
+
+  // azure
+  if(dvc_remote_list.includes('azure://')) {
+    const { AZURE_STORAGE_CONNECTION_STRING, AZURE_STORAGE_CONTAINER_NAME } = process.env;
+    if (!AZURE_STORAGE_CONNECTION_STRING || !AZURE_STORAGE_CONTAINER_NAME) {
+      console.log(`:warning: Azure dvc remote found but no credentials found`);
+    }
+  }
+
+  // Aliyn
+  if(dvc_remote_list.includes('oss://')) {
+    const { OSS_BUCKET, OSS_ACCESS_KEY_ID, OSS_ACCESS_KEY_SECRET, OSS_ENDPOINT } = process.env;
+    if (!OSS_BUCKET || !OSS_ACCESS_KEY_ID || !OSS_ACCESS_KEY_SECRET || !OSS_ENDPOINT) {
+      console.log(`:warning: Aliyin dvc remote found but no credentials found`);
+    }
+  }
+
+  // gs
+  if(dvc_remote_list.includes('gs://')) {
+    const { GOOGLE_APPLICATION_CREDENTIALS } = process.env;
+    if (GOOGLE_APPLICATION_CREDENTIALS) {
+      const path = '.dvc/tmp/GOOGLE_APPLICATION_CREDENTIALS.json';
+      await fs.writeFile(path, GDRIVE_USER_CREDENTIALS);
+      process.env['GOOGLE_APPLICATION_CREDENTIALS'] = path;
+
+    } else {
+      console.log(`:warning: Google storage dvc remote found but no credentials found`);
+    }
+  }
+  
+  // gdrive
+  if(dvc_remote_list.includes('gdrive://')) {
+    const { GDRIVE_USER_CREDENTIALS } = process.env;
+    if (GDRIVE_USER_CREDENTIALS) {
+        const path = '.dvc/tmp/gdrive-user-credentials.json';
+        await fs.writeFile(path, GDRIVE_USER_CREDENTIALS);
+
+    } else {
+      console.log(`:warning: Google drive dvc remote found but no credentials found`);
+    }
+  }
+
+  // ssh
+  if(dvc_remote_list.includes('ssh://')) {
+    const { DVC_REMOTE_SSH_KEY } = process.env;
+    if (DVC_REMOTE_SSH_KEY) {
+        const path = '~/.ssh/dvc_remote.pub';
+        await fs.writeFile(path, DVC_REMOTE_SSH_KEY);
+        await exec(`echo ${path} >> ~/.ssh/known_hosts`);
+
+    } else {
+      console.log(`:warning: SSH dvc remote found but no credentials found`);
+    }
+  }
+
+  // HDFS
+  if(dvc_remote_list.includes('hdfs://')) {
+    // TODO: implement
+    throw new Error(`:warning: HDFS secrets not yet implemented`);
+  }
+
+  if (has_dvc_remote) {
+    console.log('Pulling from dvc remote');
+    // TODO: check if -f and try would be desirable
+    // projects with repro without push data previously fails
+    try {
+      await exec('dvc pull -f', { throw_err: false });
+    } catch (err) {
+      console.error('Failed pulling from remote');
+    }
+  }
+}
+
+const repro = async (dvc_file) => {
+  return await exec(`dvc repro ${dvc_file}`, { throw_err: false, debug: true });
 }
 
 const get = async (opts) => {
-    return FIXTURES[opts.rev ? `${opts.input}@${opts.rev}` : opts.input];
+  const output_tmp = `./get_${uuid()}`;
+  const { input, rev, output = output_tmp, url = './' } = opts;
 
-    const output_tmp = `./get_${new Date().getUTCMilliseconds()}`;
-    const { input, rev, output = output_tmp, url = './' } = opts;
-    await exec(`dvc get --rev ${rev} -o ${output} ${url} ${input}`);
+  const command = rev ? `dvc get --rev ${rev} -o ${output} ${url} ${input}` 
+    : `dvc get -o ${output} ${url} ${input}`;
 
-    const data = await fs.readFile(output, "utf8");
+  await exec(command, { throw_err: false });
+  const data = await fs.readFile(output, "utf8");
 
-    if (output_tmp === output)
-        await fs.unlink(output);
+  if (output_tmp === output)
+    await fs.unlink(output);
 
-    return data;
+  return data;
 }
 
-const metrics = async (opts) => {
-    const { diff } = opts;
+const metrics_show = async (opts) => {
+  const { all } = opts;
+  const metrics = {};
 
-    if (!diff) throw new Error('Metric not yet implemented');
+  const dvc_out = await exec('dvc metrics show -a', { throw_err: false });
 
-    const metrics = {};
-    
-    for (key in FIXTURES2) {
-        metrics[key] = { new: FIXTURES2[key]['current'], old: FIXTURES2[key]['old'] }
+  const lines = dvc_out.split('\n');
+  let branch;
+  for(let i=0; i<lines.length; i++) {
+      const line = lines[i];
+
+      if (line.length) {
+          const is_branch = !line.startsWith('\t');
+      
+          if (is_branch) {
+              branch = line
+                  .replace(':', '')
+                  .replace('working tree', 'current'); //TODO: review, working tree not comming always?
+              metrics[branch] = [];
+          
+          } else {
+              try {
+                  const path = line.split(':')[0].replace('\t', '');
+                  await fs.access(path, fs.F_OK);
+                  branch && metrics[branch].push(path);
+              
+              } catch(err) {
+                  //console.log(err)
+              }
+          }
+      }
+  }
+
+  // [branch1, branch2] cleanup
+  for (metric in metrics) {
+    const exploded = metric.split(', ');
+
+    if (exploded.length > 1) {
+        exploded.forEach(item => {
+            metrics[item] = metrics[metric];
+        });
+
+        delete metrics[metric];
     }
+  }
 
-    return metrics;
+  const out = {};
+  for (rev in metrics) {
+    if (all || rev === 'current') {
+        out[rev] = [];
 
-    //{"metrics.json": {"types.top5-error": {"old": 0.525454, "new": 0.5254552, "diff": 1.2000000000345068e-06}, "error-rate": {"old": 0.192458, "new": 0.19655656, "diff": 0.004098560000000001}, "AUC": {"old": 0.674134, "new": 0.675554, "diff": 0.0014199999999999768}, "types.top10-error": {"old": 0.86642, "new": 0.86857, "diff": 0.0021499999999999853}}}
+        await Promise.all( metrics[rev].map(async (path, idx)  => {
+            const data = await get({ input: path });
+
+            out[rev][idx] = { path, data }
+        }));
+    } 
+  }
+
+  return out;
 }
 
 
 
+
+const metrics_diff = async () => {
+  return DVC_METRICS_DIFF_STUB;
+      
+  // TODO: remove STUB
+  const json = await exe('dvc metrics diff --show-json');
+  const data = JSON.parse(json);
+
+  return data;
+}
+
+const diff = async (from, to) => {
+  // TODO: Replace this section with real output
+  const mock_outs = (total) => {
+    const files = [];
+
+    for (let i=0; i<total; i++)
+      files.push({ path: `file${i}`, size: 0 });
+
+    return  files;
+  }
+
+  const dvc_out = await exec(`dvc diff ${from} ${to}`, { throw_err: false });
+  //1799 files untouched, 0 files modified, 1000 files added, 1 file deleted, size was increased by 23.0 MB
+  // const regex = /(\d+) files? untouched, (\d+) files? modified, (\d+) files? added, (\d+) files? deleted/g;
+  //files summary: 15 added, 2 deleted, 1 modified
+  const regex = /files summary: (\d+) added, (\d+) deleted, (\d+) modified/g;
+  const match = regex.exec(dvc_out);
+
+  return {
+      added: mock_outs(match[1]),
+      deleted: mock_outs(match[2]),
+      modified: mock_outs(match[3]),
+  };
+}
+
+exports.setup = setup;
+exports.init_remote = init_remote;
+
+exports.repro = repro;
 exports.get = get;
+exports.metrics_show = metrics_show;
+exports.metrics_diff = metrics_diff;
+exports.diff = diff;
