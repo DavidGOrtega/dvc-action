@@ -169,13 +169,15 @@ const metrics_show = async (opts) => {
     }
   }
 
+  console.log(metrics);
+
   const out = {};
   for (rev in metrics) {
     if (all || rev === 'current') {
         out[rev] = [];
 
         await Promise.all( metrics[rev].map(async (path, idx)  => {
-            const data = await get({ input: path });
+            const data = await get({ rev, input: path });
 
             out[rev][idx] = { path, data }
         }));
