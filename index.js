@@ -87,7 +87,7 @@ const dvc_report = async (opts) => {
   const { templates } = opts;
 
   const listrel = await octokit.repos.listReleases({ owner, repo });
-  const releases = releases.data || [];
+  const releases = listrel.data || [];
 
   // BASE_SHA VS SHA
   const from = sanitize(IS_PR ? 
