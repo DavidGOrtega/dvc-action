@@ -9,8 +9,9 @@ const setup = async () => {
 
   } catch(err) {
     console.log('installing dvc...');
-    await exec('pip uninstall -y enum34', { throw_err: false });
-    await exec('pip install --quiet dvc[all]');
+    await exec('pip3 uninstall -y enum34', { throw_err: false });
+    await exec('pip3 install --quiet dvc[all]');
+    console.log(await exec('dvc --version'));
   }
 }
 
@@ -202,31 +203,11 @@ const metrics_diff = async () => {
 }
 
 const diff = async (from, to) => {
-  // TODO: Replace this section with real output
-  const mock_outs = (total) => {
-    const files = [];
-
-    for (let i=0; i<total; i++)
-      files.push({ path: `file${i}`, size: 0 });
-
-    return  files;
-  }
-
   console.log(`dvc diff --show-json ${from} ${to}`);
-  const dvc_out = await exec(`dvc diff --show-json ${from} ${to}`, { throw_err: false });
-  //1799 files untouched, 0 files modified, 1000 files added, 1 file deleted, size was increased by 23.0 MB
-  // const regex = /(\d+) files? untouched, (\d+) files? modified, (\d+) files? added, (\d+) files? deleted/g;
-  //files summary: 15 added, 2 deleted, 1 modified
-  console.log("dvc_out");
-  console.log(dvc_out);
-  const regex = /files summary: (\d+) added, (\d+) deleted, (\d+) modified/g;
-  const match = regex.exec(dvc_out);
+  //const dvc_out = await exec(`dvc diff --show-json ${from} ${to}`, { throw_err: false });
+  const dvc_out = await exec(`dvc diff --show-json HEAD HEAD~1`, { throw_err: false });
 
-  return {
-      added: mock_outs(match[1]),
-      deleted: mock_outs(match[2]),
-      modified: mock_outs(match[3]),
-  };
+  return JSON.parse(dvc_out);
 }
 
 exports.setup = setup;
