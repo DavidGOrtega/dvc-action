@@ -9,7 +9,6 @@ const setup = async () => {
 
   } catch(err) {
     console.log('installing dvc...');
-    await exec('apt update', { throw_err: false });
     await exec('pip uninstall -y enum34', { throw_err: false });
     await exec('pip install --quiet dvc[all]');
   }
@@ -194,11 +193,9 @@ const metrics_show = async (opts) => {
 
 
 
-const metrics_diff = async () => {
-  return DVC_METRICS_DIFF_STUB;
-      
+const metrics_diff = async () => {   
   // TODO: remove STUB
-  const json = await exe('dvc metrics diff --show-json');
+  const json = await exec('dvc metrics diff --show-json');
   const data = JSON.parse(json);
 
   return data;
@@ -215,10 +212,12 @@ const diff = async (from, to) => {
     return  files;
   }
 
+  console.log(`dvc diff --show-json ${from} ${to}`);
   const dvc_out = await exec(`dvc diff --show-json ${from} ${to}`, { throw_err: false });
   //1799 files untouched, 0 files modified, 1000 files added, 1 file deleted, size was increased by 23.0 MB
   // const regex = /(\d+) files? untouched, (\d+) files? modified, (\d+) files? added, (\d+) files? deleted/g;
   //files summary: 15 added, 2 deleted, 1 modified
+  console.log("dvc_out");
   console.log(dvc_out);
   const regex = /files summary: (\d+) added, (\d+) deleted, (\d+) modified/g;
   const match = regex.exec(dvc_out);
