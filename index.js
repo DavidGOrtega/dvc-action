@@ -92,7 +92,7 @@ const dvc_report = async (opts) => {
   // BASE_SHA VS SHA
   const from = sanitize(IS_PR ? 
     await exec(`git log -n 1 origin/${BASE_REF} --pretty=format:%H`) : 
-    await exec(`git rev-parse HEAD^`));
+    await exec(`git rev-parse HEAD^`, ));
 
   const to = IS_PR ? HEAD_SHA : sanitize(await exec(`git rev-parse HEAD`));
 
