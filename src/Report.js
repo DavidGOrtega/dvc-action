@@ -168,12 +168,12 @@ const dvc_report_others = async (opts) => {
 
 const dvc_report = async (opts) => {
     const data = await dvc_report_data_md(opts);
-    const metrics_diff = await dvc_report_metrics_diff_md(opts);
+    //const metrics_diff = await dvc_report_metrics_diff_md(opts);
     //const metrics_vega = await dvc_report_metrics_md(opts);
     const vegametrics = await dvc_report_vegametrics_md(opts);
     const others = await dvc_report_others(opts);
     
-    const summary = `### Data \n\n${data} \n\n### Metrics \n\n ${metrics_diff} \n\n ${vegametrics} \n\n### Other experiments \n${others}`;
+    const summary = `### Data \n\n${data} \n\n### Metrics  \n\n ${vegametrics} \n\n### Other experiments \n${others}`;
   
     console.log(summary);
 
