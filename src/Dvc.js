@@ -195,6 +195,8 @@ const metrics_show = async (opts) => {
 
 
 const metrics_diff = async (opts) => {   
+  return DVC_METRICS_DIFF_STUB;
+
   const {from = '', to = ''} = opts;
   const json = await exec(`dvc metrics diff --show-json ${from} ${to}`, { throw_err: false });
   const data = JSON.parse(json);
