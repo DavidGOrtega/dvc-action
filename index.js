@@ -61,19 +61,22 @@ const run_repro = async (opts) => {
 
   if (repro_ran) {
     console.log('dvc repro ran, updating remotes');
-    await exec('dvc commit -f');
-
     await exec(`git config --local user.email "${user_email}"`);
     await exec(`git config --local user.name "${user_name}"`);
+    await exec(`git remote add remote "${remote}"`, { throw_err: false });
+    
     await exec(`git add --all`);
+    await exec('dvc commit -f');
     await exec(`git commit -a -m "dvc repro ${skip_ci}"`);
 
     await exec('dvc push');
+    await exec(`git push remote HEAD:${ref}`, { throw_err: false });
 
-    const tag = `experiment_${uuid()}`;
-    await exec(`git remote add remote "${remote}"`, { throw_err: false });
-    await exec(`git tag ${tag}`, { throw_err: false });
-    await exec(`git push remote HEAD:${ref} --tags`, { throw_err: false });
+    return (await exec(`git rev-parse HEAD`, ).replace(/(\r\n|\n|\r)/gm, "");
+
+    // const tag = `experiment_${uuid()}`;
+    // await exec(`git tag ${tag}`, { throw_err: false });
+    // await exec(`git push remote HEAD:${ref} --tags`, { throw_err: false });
   
   } else 
     console.log('pipelines are up to date');
@@ -206,10 +209,10 @@ const run = async () => {
 
     const report = await dvc_report({ templates: TEMPLATES });
 
-    await create_check_dvc_report({ head_sha, report });
+    await create_check_dvc_report({ head_sha: repro_ran, report });
 
     if (!RELEASE_SKIP && repro_ran)
-      await create_release({ head_sha, report, release_files: RELEASE_FILES });
+      await create_release({ head_sha: repro_ran, report, release_files: RELEASE_FILES });
 
   } catch (error) {
     core.setFailed(error.message);

@@ -34,7 +34,7 @@ const dvc_report_data_md = async (opts) => {
     let summary = 'No data available';
 
     try {
-        const { added, modified, deleted } = await DVC.diff(from, to); 
+        const { added, modified, deleted } = await DVC.diff({ from, to }); 
         const sections = [
             { lbl: 'Added', files: added },
             { lbl: 'Modified', files: modified },
@@ -44,7 +44,7 @@ const dvc_report_data_md = async (opts) => {
         summary = '';
         sections.forEach(section => {
             summary += `<details>
-            <summary>${section.lbl} files: ${section.files.length}</summary>\n`;
+            <summary>${section.lbl}: ${section.files.length}</summary>\n`;
 
             section.files.forEach(file => 
                 summary += ` - ${file.path} \n` + "\n");
@@ -59,11 +59,11 @@ const dvc_report_data_md = async (opts) => {
     return summary;
 }
 
-const dvc_report_metrics_diff_md = async () => {
+const dvc_report_metrics_diff_md = async (opts) => {
     let summary = 'No metrics difference available';
   
     try {
-      const dvc_out = await DVC.metrics_diff();
+      const dvc_out = await DVC.metrics_diff(opts);
 
       const diff = [];
       for (path in dvc_out) {
@@ -123,10 +123,10 @@ const dvc_report_metrics_md = async (opts) => {
 }
 
 const dvc_report_vegametrics_md = async (opts) => {
-    const { templates } = opts;
+    const { templates = [] } = opts;
 
     let summary = '';
-    if (templates && templates.length) {
+    if (templates.length) {
         try {
             for (idx in templates) {
                 const template = templates[idx];
@@ -153,14 +153,16 @@ const dvc_report_vegametrics_md = async (opts) => {
 // TODO: data model of releases is tied to github
 // TODO: replace with tags
 const dvc_report_others = async (opts) => {
-    const { releases } = opts;
+    const { releases = [] } = opts;
 
-    const dvc_releases = releases.filter(release => release.name && release.name.includes('DVC')); 
-    const links = dvc_releases.map(release => `[${release.tag_name}](${release.html_url})`).join(', ');
-  
-    if (links && links.length)
-        return `<details><summary>Experiments</summary>\n\n${links}\n</details>`;
-  
+    if (releases.length) {
+        const dvc_releases = releases.filter(release => release.name && release.name.includes('DVC')); 
+        const links = dvc_releases.map(release => `[${release.tag_name}](${release.html_url})`).join(', ');
+    
+        if (links && links.length)
+            return `<details><summary>Experiments</summary>\n\n${links}\n</details>`;
+    }
+    
     return 'No other experiments found';
 }
 

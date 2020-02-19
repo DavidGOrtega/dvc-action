@@ -194,18 +194,19 @@ const metrics_show = async (opts) => {
 
 
 
-const metrics_diff = async () => {   
-  // TODO: remove STUB
-  const json = await exec('dvc metrics diff --show-json');
+const metrics_diff = async (opts) => {   
+  const {from = '', to = ''} = opts;
+  const json = await exec(`dvc metrics diff --show-json ${from} ${to}`, { throw_err: false });
   const data = JSON.parse(json);
 
   return data;
 }
 
-const diff = async (from, to) => {
-  console.log(`dvc diff --show-json ${from} ${to}`);
-  //const dvc_out = await exec(`dvc diff --show-json ${from} ${to}`, { throw_err: false });
-  const dvc_out = await exec(`dvc diff --show-json HEAD HEAD~1`, { throw_err: false });
+const diff = async (opts) => {
+  const {from = '', to = ''} = opts;
+  const dvc_out = await exec(`dvc diff --show-json ${from} ${to}`, { throw_err: false });
+
+  console.log(dvc_out);
 
   return JSON.parse(dvc_out);
 }
