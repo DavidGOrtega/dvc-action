@@ -167,9 +167,6 @@ const dvc_report_others = async (opts) => {
 }
 
 const dvc_report = async (opts) => {
-    const summary2 = `### Data \n\nthis is a test!`;
-    return summary2;
-
     const data = await dvc_report_data_md(opts);
     const metrics_diff = await dvc_report_metrics_diff_md(opts);
     //const metrics_vega = await dvc_report_metrics_md(opts);
