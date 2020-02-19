@@ -72,7 +72,7 @@ const run_repro = async (opts) => {
     await exec('dvc push');
     await exec(`git push remote HEAD:${ref}`, { throw_err: false });
 
-    return (await exec(`git rev-parse HEAD`, ).replace(/(\r\n|\n|\r)/gm, "");
+    return (await exec(`git rev-parse HEAD`,{ throw_err: false }) ).replace(/(\r\n|\n|\r)/gm, "");
 
     // const tag = `experiment_${uuid()}`;
     // await exec(`git tag ${tag}`, { throw_err: false });
