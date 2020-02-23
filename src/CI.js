@@ -3,7 +3,7 @@ const DVC = require('./Dvc');
 const Report = require('./Report');
 
 const DVC_TITLE = 'Dvc Report';
-const DVC_TAG_PREFIX = 'experiment_';
+const DVC_TAG_PREFIX = 'dvc_';
 const SKIP = '[ci skip]';
 
 const commit_skip_ci = async () => {
@@ -36,15 +36,14 @@ const run_dvc_repro = async (opts) => {
   await exec(`git add --all`);
   await exec(`git commit -a -m "dvc repro ${SKIP}"`);
 
+  const sha = (await exec(`git rev-parse HEAD`, { throw_err: false })).replace(/(\r\n|\n|\r)/gm, "");
+  const tag = `${DVC_TAG_PREFIX}${sha.slice(0, 7)}`;
+
   await exec('dvc push');
-  await exec(`git push remote HEAD:${ref}`, { throw_err: false });
+  await exec(`git tag ${tag}`, { throw_err: false });
+  await exec(`git push remote HEAD:${ref} --tags`, { throw_err: false });
 
-  const new_sha = (await exec(`git rev-parse HEAD`, { throw_err: false })).replace(/(\r\n|\n|\r)/gm, "");
-  const tag = `${DVC_TAG_PREFIX}${new_sha.slice(0, 7)}`;
-  //await exec(`git tag ${tag}`, { throw_err: false });
-  //await exec(`git push remote HEAD:${new_sha} --tags`, { throw_err: false });
-
-  return new_sha;
+  return sha;
 }
 
 const dvc_report = async (opts) => {
@@ -53,7 +52,7 @@ const dvc_report = async (opts) => {
   const dvc_diff = await DVC.diff({ from, to, target: diff_target });
   const dvc_metrics_diff = await DVC.metrics_diff({ from, to, targets: metrics_diff_targets });
 
-  await exec('git fetch --depth=1 origin +refs/tags/*:refs/tags/*');
+  await exec('git fetch --depth=1 origin +refs/tags/*:refs/tags/*', { throw_err: false });
   const tags = (await git.tags()).all.filter(tag => tag.startsWith(DVC_TAG_PREFIX));
 
   console.log(await git.log())
