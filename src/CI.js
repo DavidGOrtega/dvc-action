@@ -41,8 +41,8 @@ const run_dvc_repro = async (opts) => {
 
   const new_sha = (await exec(`git rev-parse HEAD`, { throw_err: false })).replace(/(\r\n|\n|\r)/gm, "");
   const tag = `${DVC_TAG_PREFIX}${new_sha.slice(0, 7)}`;
-  await exec(`git tag ${tag}`, { throw_err: false });
-  await exec(`git push remote HEAD:${new_sha} --tags`, { throw_err: false });
+  //await exec(`git tag ${tag}`, { throw_err: false });
+  //await exec(`git push remote HEAD:${new_sha} --tags`, { throw_err: false });
 
   return new_sha;
 }
@@ -53,6 +53,7 @@ const dvc_report = async (opts) => {
   const dvc_diff = await DVC.diff({ from, to, target: diff_target });
   const dvc_metrics_diff = await DVC.metrics_diff({ from, to, targets: metrics_diff_targets });
   const tags = (await git.tags()).all.filter(tag => tag.startsWith(DVC_TAG_PREFIX));
+  console.log(tags);
 
   const md = await Report.dvc_report_md({ dvc_diff, dvc_metrics_diff, tags });
   const html = Report.md_to_html(md);
