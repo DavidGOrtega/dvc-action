@@ -2,7 +2,8 @@ const core = require('@actions/core')
 const github = require('@actions/github')
 
 const { exec } = require('./src/utils')
-const CI = require('./src/CI');
+const DVC = require('./src/DVC')
+const CI = require('./src/CI')
 
 const GITHUB_TOKEN = core.getInput('github_token');
 const octokit = new github.GitHub(GITHUB_TOKEN);
