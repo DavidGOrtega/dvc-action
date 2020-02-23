@@ -19,7 +19,7 @@ const run_dvc_repro = async (opts) => {
     return false;
   }
 
-  console.log(`Running dvc repro ${dvc_repro_file}`);
+  console.log(`Running dvc repro ${repro_targets}`);
 
   const dvc_repro = await DVC.repro({ targets: repro_targets });
   console.log(dvc_repro);
