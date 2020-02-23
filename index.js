@@ -29,14 +29,10 @@ const check_action_ran_ref = async (opts) => {
   const { owner, repo, ref } = opts;
   const checks = await octokit.checks.listForRef({ owner, repo, ref });
 
-  checks.data.check_runs.forEach(check => {
-    console.log(check);
-    if (check.name.includes(GITHUB_WORKFLOW) &&  
-      !['failure', 'cancelled', 'timed_out'].includes(check.conclusion))
-        return true;
-  });
+  return (checks.data.check_runs.filter(check => {
+    return check.name.includes(`${GITHUB_WORKFLOW}`)
+  }).length > 1) 
 
-  return false;
 }
 
 const create_check_dvc_report = async (opts) => {
