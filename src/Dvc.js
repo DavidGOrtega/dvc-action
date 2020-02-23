@@ -1,34 +1,37 @@
-const { uuid, exec, fs } = require('./utils')
-const { METRICS, DVC_METRICS_DIFF_STUB } = require('./Fixtures');
-
-const STUB = process.env.STUB;
+const { exec, fs } = require('./utils')
 
 const setup = async () => {
   try {
     await exec('dvc');
 
   } catch(err) {
-    console.log('installing dvc...');
+    console.log('Installing Dvc ...');
     await exec('pip3 uninstall -y enum34', { throw_err: false });
     await exec('pip3 install --quiet dvc[all]');
-    console.log(await exec('dvc --version'));
   }
 }
 
-const init_remote = async () => {
+const init_remote = async (opts) => {
+  const { dvc_pull = true } = opts;
+
+  if (!dvc_pull) {
+    console.log('Skipping dvc_pull by user');
+    return;
+  }
+
+  console.log('Initiating Dvc remote ...');
+
   const dvc_remote_list = (await exec('dvc remote list', { throw_err: false })).toLowerCase();
   const has_dvc_remote = dvc_remote_list.length > 0;
 
-  if (!has_dvc_remote) { 
-    console.log(':warning: Experiment does not have dvc remote!');
-    return;
-  }
+  if (!has_dvc_remote) 
+    throw new Error('Experiment does not have Dvc remote!');
 
   // s3
   if(dvc_remote_list.includes('s3://')) {
     const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
     if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
-      console.log(`:warning: S3 dvc remote found but no credentials found`);
+      throw new Error(`S3 dvc remote found but no credentials found`);
     }
   }
 
@@ -36,7 +39,7 @@ const init_remote = async () => {
   if(dvc_remote_list.includes('azure://')) {
     const { AZURE_STORAGE_CONNECTION_STRING, AZURE_STORAGE_CONTAINER_NAME } = process.env;
     if (!AZURE_STORAGE_CONNECTION_STRING || !AZURE_STORAGE_CONTAINER_NAME) {
-      console.log(`:warning: Azure dvc remote found but no credentials found`);
+      throw new Error(`Azure dvc remote found but no credentials found`);
     }
   }
 
@@ -44,7 +47,7 @@ const init_remote = async () => {
   if(dvc_remote_list.includes('oss://')) {
     const { OSS_BUCKET, OSS_ACCESS_KEY_ID, OSS_ACCESS_KEY_SECRET, OSS_ENDPOINT } = process.env;
     if (!OSS_BUCKET || !OSS_ACCESS_KEY_ID || !OSS_ACCESS_KEY_SECRET || !OSS_ENDPOINT) {
-      console.log(`:warning: Aliyin dvc remote found but no credentials found`);
+      throw new Error(`Aliyin dvc remote found but no credentials found`);
     }
   }
 
@@ -57,7 +60,7 @@ const init_remote = async () => {
       process.env['GOOGLE_APPLICATION_CREDENTIALS'] = path;
 
     } else {
-      console.log(`:warning: Google storage dvc remote found but no credentials found`);
+      throw new Error(`Google storage dvc remote found but no credentials found`);
     }
   }
   
@@ -69,7 +72,7 @@ const init_remote = async () => {
         await fs.writeFile(path, GDRIVE_USER_CREDENTIALS);
 
     } else {
-      console.log(`:warning: Google drive dvc remote found but no credentials found`);
+      throw new Error(`Google drive dvc remote found but no credentials found`);
     }
   }
 
@@ -82,142 +85,53 @@ const init_remote = async () => {
         await exec(`echo ${path} >> ~/.ssh/known_hosts`);
 
     } else {
-      console.log(`:warning: SSH dvc remote found but no credentials found`);
+      throw new Error(`SSH dvc remote found but no credentials found`);
     }
   }
 
   // HDFS
   if(dvc_remote_list.includes('hdfs://')) {
     // TODO: implement
-    throw new Error(`:warning: HDFS secrets not yet implemented`);
+    throw new Error(`HDFS secrets not yet implemented`);
   }
 
   if (has_dvc_remote) {
-    console.log('Pulling from dvc remote');
-    // TODO: check if -f and try would be desirable
-    // projects with repro without push data previously fails
+    console.log('Pulling from Dvc remote ...');
     try {
-      await exec('dvc pull -f', { throw_err: false, debug: true });
+      await exec('dvc pull -f', { throw_err: false });
+      console.log('Pulling from Dvc remote completed');
     } catch (err) {
-      console.error('Failed pulling from remote');
+      console.error(err);
+      throw new Error('Failed pulling from Dvc remote');
     }
   }
 }
 
-const repro = async (dvc_file) => {
-  return await exec(`dvc repro ${dvc_file}`, { throw_err: false, debug: true });
-}
-
-const get = async (opts) => {
-  const output_tmp = `./get_${uuid()}`;
-  const { input, rev, output = output_tmp, url = './' } = opts;
-
-  const command = rev ? `dvc get --rev ${rev} -o ${output} ${url} ${input}` 
-    : `dvc get -o ${output} ${url} ${input}`;
-
-  await exec(command, { throw_err: false });
-  const data = await fs.readFile(output, "utf8");
-
-  if (output_tmp === output)
-    await fs.unlink(output);
-
-  return data;
-}
-
-const metrics_show = async (opts) => {
-  const { all } = opts;
-  const metrics = {};
-
-  const dvc_out = await exec('dvc metrics show -a', { throw_err: false });
-
-  const lines = dvc_out.split('\n');
-  let branch;
-  for(let i=0; i<lines.length; i++) {
-      const line = lines[i];
-
-      if (line.length) {
-          const is_branch = !line.startsWith('\t');
-      
-          if (is_branch) {
-              branch = line
-                  .replace(':', '')
-                  .replace('working tree', 'current'); //TODO: review, working tree not comming always?
-              metrics[branch] = [];
-          
-          } else {
-              try {
-                  const path = line.split(':')[0].replace('\t', '');
-                  await fs.access(path, fs.F_OK);
-                  branch && metrics[branch].push(path);
-              
-              } catch(err) {
-                  //console.log(err)
-              }
-          }
-      }
-  }
-
-  // [branch1, branch2] cleanup
-  for (metric in metrics) {
-    const exploded = metric.split(', ');
-
-    if (exploded.length > 1) {
-        exploded.forEach(item => {
-            metrics[item] = metrics[metric];
-        });
-
-        delete metrics[metric];
-    }
-  }
-
-  console.log('metrics');
-  console.log(await exec('git branch'));
-  console.log(metrics);
-
-  const out = {};
-  for (branch in metrics) {
-    if (all || branch === 'current') {
-        out[branch] = [];
-        const rev = branch === 'current' ? null : branch;
-
-        await Promise.all( metrics[branch].map(async (path, idx)  => {
-            const data = await get({ rev, input: path });
-
-            out[branch][idx] = { path, data }
-        }));
-    } 
-  }
-
-  return out;
-}
-
-
-
-
-const metrics_diff = async (opts) => {   
-  return DVC_METRICS_DIFF_STUB;
-
-  const {from = '', to = ''} = opts;
-  const json = await exec(`dvc metrics diff --show-json ${from} ${to}`, { throw_err: false });
-  const data = JSON.parse(json);
-
-  return data;
+const repro = async (opts) => {
+  const { targets } = opts;
+  return await exec(`dvc repro ${targets}`, { throw_err: false });
 }
 
 const diff = async (opts) => {
-  const {from = '', to = ''} = opts;
-  const dvc_out = await exec(`dvc diff --show-json ${from} ${to}`, { throw_err: false });
+  const { from = '', to = '', target } = opts;
+  const target_param = target ? `--target ${target}` : '';
+  const json = await exec(`dvc diff ${target_param} --show-json ${from} ${to}`, { throw_err: false });
 
-  console.log(dvc_out);
+  if (json)
+    return JSON.parse(json);
+}
 
-  return JSON.parse(dvc_out);
+const metrics_diff = async (opts) => {   
+  const { from = '', to = '', targets = [] } = opts;
+  const targets_param = targets.length ? `--targets ${targets.join(' ')}` : '';
+  const json = await exec(`dvc metrics diff ${targets_param} --show-json ${from} ${to}`, { throw_err: false });
+
+  if (json)
+    return JSON.parse(json);
 }
 
 exports.setup = setup;
 exports.init_remote = init_remote;
-
 exports.repro = repro;
-exports.get = get;
-exports.metrics_show = metrics_show;
-exports.metrics_diff = metrics_diff;
 exports.diff = diff;
+exports.metrics_diff = metrics_diff;

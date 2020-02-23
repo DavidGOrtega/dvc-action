@@ -5,23 +5,16 @@ inputs:
   github_token: 
     required: true
 
-  dvc_repro_file:
+  dvc_pull:
+    required: false
+    default: true
+
+  repro_targets:
     required: false
     default: 'Dvcfile'
 
-  vega_templates: 
+  metrics_diff_targets:
     required: false
-
-  release_files:
-    required: false
-
-  release_skip: 
-    required: false
-    default: false
-
-  skip_ci: 
-    required: false
-    default: '[ci skip]'
 
 runs:
   using: 'node12'

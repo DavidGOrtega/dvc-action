@@ -1,7 +1,7 @@
 const util = require('util')
 const fs = require('fs').promises
-const glob = util.promisify(require('glob'))
 const path = require('path')
+const git  = require('simple-git/promise');
 
 fs.exists = async (file) => {
   try {
@@ -30,16 +30,8 @@ const uuid = () => {
   return String(new Date().getUTCMilliseconds());
 }
 
-const imgur = require('imgur')
-imgur.setClientId('9ae2688f25fae09')
-
-const upload_image = async (img_path) => {
-  const imgur_resp = await imgur.uploadFile(img_path);
-  return imgur_resp.data.link;
-}
-
 exports.fs = fs;
-exports.glob = glob;
+exports.path = path;
 exports.exec = exec;
 exports.uuid = uuid;
-exports.upload_image = upload_image;
+exports.git = git('./');
