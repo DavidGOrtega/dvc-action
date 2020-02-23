@@ -82,10 +82,10 @@ const run = async () => {
     return;
   } 
   
-  if (IS_PR && await check_action_ran_ref({ owner, repo, ref })) {
+  /* if (IS_PR && await check_action_ran_ref({ owner, repo, ref })) {
     console.log('This ref is running or has runned another check. Cancelling...');
     return;
-  }
+  } */
 
   await exec('git fetch --depth=1 origin +refs/tags/*:refs/tags/*', { throw_err: false });
   await DVC.setup();
