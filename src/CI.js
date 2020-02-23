@@ -3,7 +3,7 @@ const DVC = require('./Dvc');
 const Report = require('./Report');
 
 const DVC_TITLE = 'Dvc Report';
-const DVC_TAG_PREFIX = 'dvc';
+const DVC_TAG_PREFIX = 'experiment_';
 const SKIP = '[ci skip]';
 
 const commit_skip_ci = async () => {
