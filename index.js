@@ -104,7 +104,7 @@ const run = async () => {
   console.log("Generating Dvc Report");
   const from = repro_ran ? ref : null;
   const to = repro_ran ? repro_ran : null;
-  const dvc_report_out = await dvc_report({ from, to, metrics_diff_targets });
+  const dvc_report_out = await CI.dvc_report({ from, to, metrics_diff_targets });
 
   console.log("Creating check");
   await create_check_dvc_report({ 
