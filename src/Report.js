@@ -2,7 +2,7 @@ const json_2_mdtable = require('json-to-markdown-table2')
 
 const dvc_diff_report_md = (data) => {
   if (!data)
-    return 'No metrics difference available';
+    return 'No metrics available';
   
   let summary = '';
   
@@ -27,7 +27,7 @@ const dvc_diff_report_md = (data) => {
 
 const dvc_metrics_diff_report_md = (data) => {
   if (!data)
-    return 'No metrics difference available';
+    return 'No metrics available';
 
   const diff = [];
 
