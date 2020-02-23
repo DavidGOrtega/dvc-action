@@ -17,7 +17,7 @@ const dvc_diff_report_md = (data) => {
     summary += `<details>\n<summary>${section.lbl}: ${section.files.length}</summary>\n`;
 
     section.files.forEach(file => 
-        summary += ` - ${file.path} \n`);
+        summary += ` - ${file.path} \n\n`);
 
     summary += `</details>\n`;
   });
