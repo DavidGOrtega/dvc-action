@@ -26,7 +26,7 @@ const dvc_diff_report_md = (data) => {
 }
 
 const dvc_metrics_diff_report_md = (data) => {
-  if (!data)
+  if (!data || !Object.keys(data).length)
     return 'No metrics available';
 
   const diff = [];
