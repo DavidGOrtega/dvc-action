@@ -102,7 +102,7 @@ const run = async () => {
     { user_email, user_name, remote, ref, repro_targets });
 
   console.log("Generating Dvc Report");
-  const from = repro_ran ? sha : '';
+  const from = repro_ran ? head_sha : '';
   const to = repro_ran ? repro_ran : '';
   const dvc_report_out = await CI.dvc_report({ from, to, metrics_diff_targets });
 
