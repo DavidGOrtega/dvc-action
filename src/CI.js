@@ -52,7 +52,6 @@ const dvc_report = async (opts) => {
   const dvc_diff = await DVC.diff({ from, to, target: diff_target });
   const dvc_metrics_diff = await DVC.metrics_diff({ from, to, targets: metrics_diff_targets });
 
-  await exec('git fetch --depth=1 origin +refs/tags/*:refs/tags/*', { throw_err: false });
   const tags = (await git.tags()).all.filter(tag => tag.startsWith(DVC_TAG_PREFIX));
 
   console.log(await git.log())
