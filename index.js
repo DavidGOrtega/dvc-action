@@ -87,19 +87,17 @@ const run = async () => {
     return;
   } */
 
-  //await exec('git fetch --prune --unshallow', { throw_err: false });
+  await exec('git fetch --prune --unshallow', { throw_err: false });
   await DVC.setup();
   await DVC.init_remote({ dvc_pull });
 
-  /*
   if (IS_PR) {
-    await exec(`git checkout ${ref}`, { throw_err: false });
+    await exec(`git checkout origin/${ref}`);
     await exec(`dvc checkout`, { throw_err: false });
   }
-  */
 
   const repro_ran = await CI.run_dvc_repro(
-    { user_email, user_name, remote, ref, repro_targets, is_pr: IS_PR });
+    { user_email, user_name, remote, ref, repro_targets });
 
   console.log("Generating Dvc Report");
   const from = repro_ran ? head_sha : '';
