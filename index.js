@@ -92,15 +92,8 @@ const run = async () => {
   await DVC.setup();
   await DVC.init_remote({ dvc_pull });
 
-  if (IS_PR) {
-    console.log('setting repo');
-    //await exec('git fetch --prune --unshallow', { throw_err: false });
-    await exec(`git checkout origin/${ref}`);
-    await exec(`dvc checkout`, { throw_err: false });
-  }
-
   const repro_ran = await CI.run_dvc_repro(
-    { user_email, user_name, remote, ref, repro_targets });
+    { user_email, user_name, remote, ref, repro_targets, is_pr: IS_PR });
 
   console.log("Generating Dvc Report");
   const from = repro_ran ? head_sha : '';

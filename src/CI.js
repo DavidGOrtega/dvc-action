@@ -33,6 +33,13 @@ const run_dvc_repro = async (opts) => {
   await exec(`git config --local user.name "${user_name}"`);
   await exec(`git remote add remote "${remote}"`, { throw_err: false });
 
+  if (is_pr) {
+    console.log('setting repo');
+    //await exec('git fetch --prune --unshallow', { throw_err: false });
+    await exec(`git checkout origin/${ref}`);
+    await exec(`dvc checkout`, { throw_err: false });
+  }
+
   await exec(`git add --all`);
   await exec(`git commit -a -m "dvc repro ${SKIP}"`);
 
