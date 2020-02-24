@@ -1,5 +1,3 @@
-console.log(process.env);
-
 const core = require('@actions/core')
 const github = require('@actions/github')
 
@@ -67,7 +65,7 @@ const create_check_dvc_report = async (opts) => {
 }
 
 const run = async () => {
-  const ref = REF;
+  const ref = IS_PR ? HEAD_REF : REF;
   const head_sha = IS_PR ? HEAD_SHA : SHA;
   const owner = OWNER;
   const repo = REPO;
@@ -94,7 +92,7 @@ const run = async () => {
   await DVC.init_remote({ dvc_pull });
 
   if (IS_PR) {
-    await exec(`git checkout origin/branch2_11`, { throw_err: false });
+    await exec(`git checkout origin/${ref}`);
     await exec(`dvc checkout`, { throw_err: false });
   }
 
