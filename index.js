@@ -99,7 +99,7 @@ const run = async () => {
   */
 
   const repro_ran = await CI.run_dvc_repro(
-    { user_email, user_name, remote, ref, repro_targets });
+    { user_email, user_name, remote, ref, repro_targets, is_pr: IS_PR });
 
   console.log("Generating Dvc Report");
   const from = repro_ran ? head_sha : '';

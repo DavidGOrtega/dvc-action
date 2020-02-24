@@ -12,7 +12,7 @@ const commit_skip_ci = async () => {
 }
 
 const run_dvc_repro = async (opts) => {
-  const { repro_targets, user_email, user_name, remote, ref } = opts;
+  const { repro_targets, user_email, user_name, remote, ref, is_pr } = opts;
 
   if (repro_targets === 'None') {
     console.log('DVC repro skipped by None');
@@ -32,6 +32,11 @@ const run_dvc_repro = async (opts) => {
   await exec(`git config --local user.email "${user_email}"`);
   await exec(`git config --local user.name "${user_name}"`);
   await exec(`git remote add remote "${remote}"`, { throw_err: false });
+
+  if (is_pr) {
+    await exec(`git checkout ${ref}`, { throw_err: false });
+    await exec(`dvc checkout`, { throw_err: false });
+  }
 
   await exec(`git add --all`);
   await exec(`git commit -a -m "dvc repro ${SKIP}"`);
