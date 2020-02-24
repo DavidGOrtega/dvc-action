@@ -31,7 +31,7 @@ const run_dvc_repro = async (opts) => {
 
   await exec(`git config --local user.email "${user_email}"`);
   await exec(`git config --local user.name "${user_name}"`);
-  //await exec(`git remote add remote "${remote}"`, { throw_err: false });
+  await exec(`git remote add remote "${remote}"`, { throw_err: false });
 
   await exec(`git add --all`);
   await exec(`git commit -a -m "dvc repro ${SKIP}"`);
@@ -42,7 +42,7 @@ const run_dvc_repro = async (opts) => {
   console.log('pushing');
   await exec('dvc push');
   await exec(`git tag ${tag}`, { throw_err: false });
-  await exec(`git push --tags`, { throw_err: false });
+  await exec(`git push remote HEAD:${ref} --tags`, { throw_err: false });
 
   return sha;
 }
