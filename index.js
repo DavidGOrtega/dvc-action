@@ -93,6 +93,7 @@ const run = async () => {
   await DVC.init_remote({ dvc_pull });
 
   if (IS_PR) {
+    console.log('setting repo');
     //await exec('git fetch --prune --unshallow', { throw_err: false });
     await exec(`git checkout origin/${ref}`);
     await exec(`dvc checkout`, { throw_err: false });
