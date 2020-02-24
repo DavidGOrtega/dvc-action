@@ -68,7 +68,7 @@ const create_check_dvc_report = async (opts) => {
 
 const run = async () => {
   const ref = IS_PR ? HEAD_REF : REF;
-  const head_sha = IS_PR ? HEAD_SHA : SHA;
+  const head_sha = SHA;
   const owner = OWNER;
   const repo = REPO;
   const user_email = 'action@github.com';
