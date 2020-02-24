@@ -1,6 +1,8 @@
 const core = require('@actions/core')
 const github = require('@actions/github')
 
+
+const { exec } = require('./src/utils')
 const DVC = require('./src/Dvc')
 const CI = require('./src/CI')
 
