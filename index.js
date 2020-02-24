@@ -92,8 +92,9 @@ const run = async () => {
   await DVC.init_remote({ dvc_pull });
 
   if (IS_PR) {
-    //await exec(`git checkout origin/${ref}`);
-    //await exec(`dvc checkout`, { throw_err: false });
+    await exec(`git fetch --prune --unshallow`);
+    await exec(`git checkout ${ref}`);
+    await exec(`dvc checkout`, { throw_err: false });
   }
 
   const repro_ran = await CI.run_dvc_repro(
