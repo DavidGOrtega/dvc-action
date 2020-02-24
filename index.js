@@ -3,7 +3,6 @@ console.log(process.env);
 const core = require('@actions/core')
 const github = require('@actions/github')
 
-const { exec } = require('./src/utils')
 const DVC = require('./src/Dvc')
 const CI = require('./src/CI')
 
@@ -15,17 +14,9 @@ const {
   GITHUB_EVENT_NAME,
   GITHUB_HEAD_REF,
   GITHUB_REF,
-  GITHUB_HEAD_SHA,
   GITHUB_SHA,
   GITHUB_WORKFLOW,
 } = process.env;
-
-const IS_PR = GITHUB_EVENT_NAME === 'pull_request';
-const HEAD_SHA = GITHUB_HEAD_SHA;
-const SHA = GITHUB_SHA;
-const HEAD_REF = GITHUB_HEAD_REF;
-const REF = GITHUB_REF;
-const [OWNER, REPO] = GITHUB_REPOSITORY.split('/');
 
 const check_action_ran_ref = async (opts) => {
   const { owner, repo, ref } = opts;
@@ -67,10 +58,10 @@ const create_check_dvc_report = async (opts) => {
 }
 
 const run = async () => {
-  const ref = IS_PR ? HEAD_REF : REF;
-  const head_sha = SHA;
-  const owner = OWNER;
-  const repo = REPO;
+  const is_pr = GITHUB_EVENT_NAME === 'pull_request';
+  const ref = is_pr ? GITHUB_HEAD_REF : GITHUB_REF;
+  const head_sha = GITHUB_SHA;
+  const [owner, repo] = GITHUB_REPOSITORY.split('/');
   const user_email = 'action@github.com';
   const user_name = 'GitHub Action';
   const remote = `https://${owner}:${GITHUB_TOKEN}@github.com/${owner}/${repo}.git`;
@@ -84,21 +75,20 @@ const run = async () => {
     return;
   } 
   
-  /* if (IS_PR && await check_action_ran_ref({ owner, repo, ref })) {
+  if (is_pr && await check_action_ran_ref({ owner, repo, ref })) {
     console.log('This ref is running or has runned another check. Cancelling...');
     return;
-  } */
+  }
 
   await DVC.setup();
   await DVC.init_remote({ dvc_pull });
 
   const repro_ran = await CI.run_dvc_repro(
-    { user_email, user_name, remote, ref, repro_targets, is_pr: IS_PR });
+    { user_email, user_name, remote, ref, repro_targets });
 
   console.log("Generating Dvc Report");
   const from = repro_ran ? head_sha : '';
   const to = repro_ran ? repro_ran : '';
-  console.log([from, to, repro_ran, head_sha, HEAD_SHA, SHA]);
   const dvc_report_out = await CI.dvc_report({ from, to, metrics_diff_targets });
 
   console.log("Creating check");
