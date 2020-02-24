@@ -36,7 +36,7 @@ const run_dvc_repro = async (opts) => {
   if (is_pr) {
     console.log('setting repo');
     //await exec('git fetch --prune --unshallow', { throw_err: false });
-    await exec(`git checkout origin/${ref}`);
+    await exec(`git checkout ${ref}`);
     await exec(`dvc checkout`, { throw_err: false });
   }
 
