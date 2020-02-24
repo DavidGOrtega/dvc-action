@@ -60,9 +60,8 @@ const create_check_dvc_report = async (opts) => {
 const run = async () => {
   const is_pr = GITHUB_EVENT_NAME === 'pull_request';
   const ref = is_pr ? GITHUB_HEAD_REF : GITHUB_REF;
-  const head_sha = is_pr ? (await exec(`git rev-parse origin/${ref}`, { throw_err: false })).replace(/(\r\n|\n|\r)/gm, "") :
-    GITHUB_SHA;
-  console.log([GITHUB_SHA, head_sha]);
+  const head_sha = GITHUB_SHA;
+
   const [owner, repo] = GITHUB_REPOSITORY.split('/');
   const user_email = 'action@github.com';
   const user_name = 'GitHub Action';

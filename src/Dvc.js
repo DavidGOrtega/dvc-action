@@ -108,17 +108,15 @@ const init_remote = async (opts) => {
 }
 
 const repro = async (opts) => {
-  const { targets } = opts;
-  return await exec(`dvc repro ${targets}`, { throw_err: false });
+  const { targets = [] } = opts;
+  const targets_param = targets.length ? targets.join(' ') : '';
+  return await exec(`dvc repro ${targets_param}`, { throw_err: false });
 }
 
 const diff = async (opts) => {
   const { from = '', to = '', target } = opts;
   const target_param = target ? `--target ${target}` : '';
   const json = await exec(`dvc diff ${target_param} --show-json ${from} ${to}`, { throw_err: false });
-
-  console.log(`dvc diff ${target_param} --show-json ${from} ${to}`);
-  console.log(json);
 
   if (json)
     return JSON.parse(json);
@@ -128,9 +126,6 @@ const metrics_diff = async (opts) => {
   const { from = '', to = '', targets = [] } = opts;
   const targets_param = targets.length ? `--targets ${targets.join(' ')}` : '';
   const json = await exec(`dvc metrics diff ${targets_param} --show-json ${from} ${to}`, { throw_err: false });
-
-  console.log(`dvc metrics diff ${targets_param} --show-json ${from} ${to}`);
-  console.log(json);
 
   if (json)
     return JSON.parse(json);
