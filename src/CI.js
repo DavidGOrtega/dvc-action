@@ -32,14 +32,14 @@ const run_dvc_repro = async (opts) => {
   await exec(`git config --local user.email "${user_email}"`);
   await exec(`git config --local user.name "${user_name}"`);
   await exec(`git remote add remote "${remote}"`, { throw_err: false });
-  await exec(`git pull origin ${ref}`);
-  
+ß
   await exec(`git add --all`);
   await exec(`git commit -a -m "dvc repro ${SKIP}"`);
 
   const sha = (await exec(`git rev-parse HEAD`, { throw_err: false })).replace(/(\r\n|\n|\r)/gm, "");
   const tag = `${DVC_TAG_PREFIX}${sha.slice(0, 7)}`;
 
+  console.log('pushing');
   await exec('dvc push');
   await exec(`git tag ${tag}`, { throw_err: false });
   await exec(`git push remote HEAD:${ref} --tags`, { throw_err: false });
