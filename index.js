@@ -62,6 +62,7 @@ const run = async () => {
   const ref = is_pr ? GITHUB_HEAD_REF : GITHUB_REF;
   const head_sha = is_pr ? (await exec(`git rev-parse ${ref}`, { throw_err: false })).replace(/(\r\n|\n|\r)/gm, "") :
     GITHUB_SHA;
+  console.log([GITHUB_SHA, head_sha]);
   const [owner, repo] = GITHUB_REPOSITORY.split('/');
   const user_email = 'action@github.com';
   const user_name = 'GitHub Action';

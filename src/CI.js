@@ -72,6 +72,7 @@ const dvc_report = async (opts) => {
 }
 
 exports.DVC_TITLE = DVC_TITLE;
+exports.SKIP = SKIP;
 exports.commit_skip_ci = commit_skip_ci;
 exports.run_dvc_repro = run_dvc_repro;
 exports.dvc_report = dvc_report;
