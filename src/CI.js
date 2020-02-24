@@ -32,7 +32,7 @@ const run_dvc_repro = async (opts) => {
   await exec(`git config --local user.email "${user_email}"`);
   await exec(`git config --local user.name "${user_name}"`);
   await exec(`git remote add remote "${remote}"`, { throw_err: false });
-ß
+
   await exec(`git add --all`);
   await exec(`git commit -a -m "dvc repro ${SKIP}"`);
 
