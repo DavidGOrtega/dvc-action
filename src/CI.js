@@ -56,8 +56,6 @@ const dvc_report = async (opts) => {
 
   const tags = (await git.tags()).all.filter(tag => tag.startsWith(DVC_TAG_PREFIX));
 
-  console.log(await git.log())
-
   const md = await Report.dvc_report_md({ dvc_diff, dvc_metrics_diff, tags });
   const html = Report.md_to_html(md);
 
