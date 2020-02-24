@@ -18,6 +18,10 @@ const {
   GITHUB_WORKFLOW,
 } = process.env;
 
+const getInputArray = (key) => {
+  return core.getInput(key) ? core.getInput(key).split(/[ ,]+/) : [];
+}
+
 const check_action_ran_ref = async (opts) => {
   const { owner, repo, ref } = opts;
   const checks = await octokit.checks.listForRef({ owner, repo, ref });
@@ -68,8 +72,8 @@ const run = async () => {
   const remote = `https://${owner}:${GITHUB_TOKEN}@github.com/${owner}/${repo}.git`;
 
   const dvc_pull = core.getInput('dvc_pull');
-  const repro_targets = core.getInput('repro_targets');
-  const metrics_diff_targets = core.getInput('metrics_diff_targets') ? core.getInput('metrics_diff_targets').split(/[ ,]+/) : [];
+  const repro_targets = getInputArray('repro_targets');
+  const metrics_diff_targets = getInputArray('metrics_diff_targets');
 
   if (await CI.commit_skip_ci()) {
     console.log(`${CI.SKIP} found; skipping task`);
