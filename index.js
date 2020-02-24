@@ -98,6 +98,7 @@ const run = async () => {
   console.log("Generating Dvc Report");
   const from = repro_ran ? head_sha : '';
   const to = repro_ran ? repro_ran : '';
+  console.log([from, to, repro_ran, head_sha, HEAD_SHA, SHA]);
   const dvc_report_out = await CI.dvc_report({ from, to, metrics_diff_targets });
 
   console.log("Creating check");
