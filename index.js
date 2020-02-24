@@ -92,7 +92,7 @@ const run = async () => {
   await DVC.init_remote({ dvc_pull });
 
   if (IS_PR) {
-    await exec(`git checkout ${ref}`);
+    await exec(`git checkout ${ref}`, { throw_err: false });
     await exec(`dvc checkout`, { throw_err: false });
   }
 
