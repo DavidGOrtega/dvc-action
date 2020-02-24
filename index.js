@@ -1,3 +1,5 @@
+console.log(process.env);
+
 const core = require('@actions/core')
 const github = require('@actions/github')
 
