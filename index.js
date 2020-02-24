@@ -87,12 +87,11 @@ const run = async () => {
     return;
   } */
 
-  //await exec('git fetch --depth=1 origin +refs/tags/*:refs/tags/*', { throw_err: false });
+  await exec('git fetch --prune --unshallow', { throw_err: false });
   await DVC.setup();
   await DVC.init_remote({ dvc_pull });
 
   if (IS_PR) {
-    await exec(`git fetch --prune --unshallow`);
     await exec(`git checkout ${ref}`);
     await exec(`dvc checkout`, { throw_err: false });
   }
