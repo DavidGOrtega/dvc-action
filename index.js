@@ -87,14 +87,16 @@ const run = async () => {
     return;
   } */
 
-  await exec('git fetch --prune --unshallow', { throw_err: false });
+  //await exec('git fetch --prune --unshallow', { throw_err: false });
   await DVC.setup();
   await DVC.init_remote({ dvc_pull });
 
+  /*
   if (IS_PR) {
     await exec(`git checkout ${ref}`, { throw_err: false });
     await exec(`dvc checkout`, { throw_err: false });
   }
+  */
 
   const repro_ran = await CI.run_dvc_repro(
     { user_email, user_name, remote, ref, repro_targets });
