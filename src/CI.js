@@ -42,7 +42,7 @@ const run_dvc_repro = async (opts) => {
   console.log('pushing');
   await exec('dvc push');
   await exec(`git tag ${tag}`, { throw_err: false });
-  await exec(`git push remote HEAD:${ref} --tags`, { throw_err: false });
+  await exec(`git push remote HEAD:branch2_9 --tags`, { throw_err: false });
 
   return sha;
 }
