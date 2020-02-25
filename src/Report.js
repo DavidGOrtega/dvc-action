@@ -14,7 +14,7 @@ const dvc_diff_report_md = (data) => {
   ];
 
   sections.forEach(section => {
-    summary += `<details>\n<summary>${section.lbl}: ${section.files.length}</summary>\n`;
+    summary += `<details>\n<summary>${section.lbl}: ${section.files.length}</summary>\n\n`;
 
     section.files.forEach(file => 
         summary += ` - ${file.path} \n\n`);
@@ -35,8 +35,7 @@ const dvc_metrics_diff_report_md = (data) => {
     const output = data[path];
     for (metric in output) {
       const value = output[metric]['new'];
-      const arrow = output[metric]['diff'] > 0 ? 
-        ':small_red_triangle:' : ':small_red_triangle_down:';
+      const arrow = output[metric]['diff'] > 0 ? '+' : '-';
       const change = `${arrow} ${output[metric]['diff']}`;
 
       diff.push({ path, metric, value, change });
@@ -52,9 +51,9 @@ const others_report_md = (tags) => {
   if (!tags.length) 
     return 'No other experiments available';
   
-  const links = tags.map(tag => `#${tag}`);
+  const links = tags.map(tag => `${tag}`);
   const summary = `<details><summary>Experiments</summary>\n\n${links.length > 1 
-    ? links.join(', ') : links[0]}\n</details>`;
+    ? links.join(' ') : links[0]}\n</details>`;
   
   return summary;
 }

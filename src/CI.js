@@ -54,9 +54,11 @@ const dvc_report = async (opts) => {
   const dvc_diff = await DVC.diff({ from, to, target: diff_target });
   const dvc_metrics_diff = await DVC.metrics_diff({ from, to, targets: metrics_diff_targets });
 
-  const tags = (await git.tags()).all.filter(tag => tag.startsWith(DVC_TAG_PREFIX));
+  const logs = await git.tags();
+  const tags = logs.all.filter(log => log.ref.contains(`tag: ${DVC_TAG_PREFIX}`));
+  const hashes = tags.map(tag => tag.hash.substr(0, 7));
 
-  const md = await Report.dvc_report_md({ dvc_diff, dvc_metrics_diff, tags });
+  const md = await Report.dvc_report_md({ dvc_diff, dvc_metrics_diff, hashes });
   const html = Report.md_to_html(md);
 
   if (opts.output) {
