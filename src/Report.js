@@ -77,23 +77,31 @@ const dvc_metrics_diff_report_md = (data) => {
   return summary;
 }
 
-const others_report_md = (hashes, reference) => {
-  if (!hashes.length) 
+const others_report_md = (others) => {
+  if (!others.length) 
     return 'No other experiments available';
   
   const max = 5;
-  const links = _.last(hashes.map(hash => `${hash.substr(0, 7)}`), max);
-  const summary = `<details><summary>Experiments</summary>\n\n 
-  Latest ${Math.min(links.length, max)} experiments in the branch:
-  ${links.length > 1 ? links.join(' ') : links[0]}\n</details>`;
+
+  let summary = `<details><summary>Experiments</summary>\n\n 
+  Latest ${Math.min(others.length, max)} experiments in the branch:\n`;
+
+  _.last(others, max).forEach(other => {
+    if (other.link && other.label)
+      summary += `[${other.label}](${other.link}) `;
+    else
+      summary += `${other.substr(0, 7)} `;
+  });
+
+  summary += '\n</details>';
 
   return summary;
 }
 
 const dvc_report_md = (opts) => {
-  const { dvc_diff, dvc_metrics_diff, hashes = [] } = opts;
+  const { dvc_diff, dvc_metrics_diff, others = [] } = opts;
   const metrics_diff_md = dvc_metrics_diff_report_md(dvc_metrics_diff);
-  const others_md = others_report_md(hashes);
+  const others_md = others_report_md(others);
   const diff_md = dvc_diff_report_md(dvc_diff, MAX_CHARS - (metrics_diff_md.length + others_md.length));
 
   const summary = `### Data \n\n${diff_md} \n\n### Metrics \n\n ${metrics_diff_md} \n\n### Other experiments \n${others_md}`;

@@ -1,15 +1,11 @@
 const core = require('@actions/core')
 const github = require('@actions/github')
 
-const { exec, git } = require('./src/utils')
 const DVC = require('./src/Dvc')
 const CI = require('./src/CI')
 
 const Report = require('./src/Report')
 Report.METRICS_FORMAT = core.getInput('metrics_format');
-
-const GITHUB_TOKEN = core.getInput('github_token');
-const octokit = new github.GitHub(GITHUB_TOKEN);
 
 const {
   GITHUB_REPOSITORY,
@@ -20,8 +16,20 @@ const {
   GITHUB_WORKFLOW,
 } = process.env;
 
+const GITHUB_TOKEN = core.getInput('github_token');
+const octokit = new github.GitHub(GITHUB_TOKEN);
+const [owner, repo] = GITHUB_REPOSITORY.split('/');
+
+
 const getInputArray = (key) => {
   return core.getInput(key) ? core.getInput(key).split(/[ ,]+/) : [];
+}
+
+const refParser = async (ref) => {
+  const checks = await octokit.checks.listForRef({ owner, repo, ref });
+  const check = checks.data.check_runs[0];
+  
+  return { label: hash.substr(0, 7), link: check.html_url };
 }
 
 const check_action_ran_ref = async (opts) => {
@@ -68,7 +76,6 @@ const run = async () => {
   const ref = is_pr ? GITHUB_HEAD_REF : GITHUB_REF;
   const head_sha = GITHUB_SHA;
 
-  const [owner, repo] = GITHUB_REPOSITORY.split('/');
   const user_email = 'action@github.com';
   const user_name = 'GitHub Action';
   const remote = `https://${owner}:${GITHUB_TOKEN}@github.com/${owner}/${repo}.git`;
@@ -87,12 +94,6 @@ const run = async () => {
     return;
   }
 
-  //console.log('here');
-  //console.log(await exec('git fetch --depth=1 origin +refs/tags/*:refs/tags/*', { throw_err: false }));
-  //console.log(await git.log());
-
-  //throw new Error('no more');
-
   await DVC.setup();
   await DVC.init_remote({ dvc_pull });
 
@@ -102,7 +103,11 @@ const run = async () => {
   console.log("Generating Dvc Report");
   const from = repro_ran ? head_sha : '';
   const to = repro_ran ? repro_ran : '';
-  const dvc_report_out = await CI.dvc_report({ from, to, metrics_diff_targets });
+  const dvc_report_out = await CI.dvc_report({ 
+    from, 
+    to,
+    metrics_diff_targets, 
+    refParser });
 
   console.log("Creating check");
   await create_check_dvc_report({ 
