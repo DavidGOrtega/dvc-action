@@ -29,12 +29,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+      - run: |
+          git fetch --prune --unshallow
 
       - name: setup python 
         uses: actions/setup-python@v1
         with:
-          python-version: 2.7
+          python-version: 3.6
 
       - uses: iterative/dvc-action
         with:
