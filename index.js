@@ -30,10 +30,9 @@ const refParser = async (ref) => {
   console.log('refParser');
   console.log(ref);
   const checks = await octokit.checks.listForRef({ owner, repo, ref });
-  console.log(checks);
-  const check = checks.data.check_runs[0];
+  const check = checks.data.check_runs.filter(check => check.name === CI.DVC_TITLE)[0];
 
-  return { label: hash.substr(0, 7), link: check.html_url };
+  return { label: ref.substr(0, 7), link: check.html_url };
 }
 
 const check_action_ran_ref = async (opts) => {
