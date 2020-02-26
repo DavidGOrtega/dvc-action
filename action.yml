@@ -16,6 +16,10 @@ inputs:
   metrics_diff_targets:
     required: false
 
+  metrics_format:
+    required: false
+    default: '7s'
+
 runs:
   using: 'node12'
   main: 'index.js'

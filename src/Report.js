@@ -1,27 +1,51 @@
 const json_2_mdtable = require('json-to-markdown-table2')
+const { format } = require('d3-format')
 
-const dvc_diff_report_md = (data) => {
+const MAX_CHARS = 65000;
+let METRICS_FORMAT = '7s';
+
+const dvc_diff_report_md = (data, max_chars) => {
   if (!data)
     return 'No metrics available';
   
   let summary = '';
   
+  const massive = [];
+  for (let idx=0; idx<10000; idx++) {
+    massive.push({path: `folder/file${idx}.png`});
+  }
+
   const { added, modified, deleted } = data; 
   const sections = [
       { lbl: 'Added', files: added },
-      { lbl: 'Modified', files: modified },
+      { lbl: 'Modified', files: massive },
       { lbl: 'Deleted', files: deleted },
   ];
 
+  const warn = '\n:warning: Report excedeed the maximun amount of allowed chars';
   sections.forEach(section => {
-    summary += `<details>\n<summary>${section.lbl}: ${section.files.length}</summary>\n\n`;
-
-    section.files.forEach(file => 
-        summary += ` - ${file.path} \n\n`);
-
-    summary += `</details>\n`;
+    summary += `<details>\n<summary>${section.lbl}: ${section.files.length}</summary>\n`;
+    summary += `#SECTION${section.lbl}#\n\n${warn}</details>\n`;
   });
-  
+
+  let count = summary.length;
+
+  sections.forEach(section => {
+    section.summary = '';
+
+    section.files.forEach(file => {
+      const file_text = ` - <font size="2">${file.path}</font> \n`;
+      count += file_text.length;
+
+      if(count < max_chars)
+        section.summary += file_text;
+    }); 
+
+    summary = summary.replace(`#SECTION${section.lbl}#`, section.summary );
+    if(count < max_chars)
+      summary = summary.replace(warn, '');
+  });
+
   return summary;
 }
 
@@ -29,41 +53,48 @@ const dvc_metrics_diff_report_md = (data) => {
   if (!data || !Object.keys(data).length)
     return 'No metrics available';
 
-  const diff = [];
+  const values = [];
 
   for (path in data) {
     const output = data[path];
     for (metric in output) {
-      const value = output[metric]['new'];
-      const arrow = output[metric]['diff'] > 0 ? '+' : '-';
-      const change = `${arrow} ${output[metric]['diff']}`;
+      const new_ = format(METRICS_FORMAT)(output[metric]['new']);
+      const old = format(METRICS_FORMAT)(output[metric]['old']);
 
-      diff.push({ path, metric, value, change });
+      const arrow = output[metric]['diff'] > 0 ? '+' : '-';
+      const color = output[metric]['diff'] > 0 ? 'green' : 'red';
+      const diff = output[metric]['diff'] ? 
+        `<font color="${color}">${arrow} ${format(METRICS_FORMAT)(output[metric]['diff'])}</font>` :
+         'no available';
+
+      values.push({ path, metric, old, new: new_, diff });
     }
   }
 
-  const summary = `\n${json_2_mdtable(diff)}`;
+  const summary = `\n${json_2_mdtable(values)}`;
 
   return summary;
 }
 
-const others_report_md = (tags) => {
-  if (!tags.length) 
+const others_report_md = (hashes, reference) => {
+  if (!hashes.length) 
     return 'No other experiments available';
   
-  const links = tags.map(tag => `${tag}`);
-  const summary = `<details><summary>Experiments</summary>\n\n${links.length > 1 
-    ? links.join(' ') : links[0]}\n</details>`;
-  
+  const max = 5;
+  const links = hashes.map(hash => `${hash.substr(0, 7)}`).slice(0, max);
+  const summary = `<details><summary>Experiments</summary>\n\n 
+  Lastest ${max} experiments in the branch:
+  ${links.length > 1 ? links.join(' ') : links[0]}\n</details>`;
+
   return summary;
 }
 
 const dvc_report_md = (opts) => {
-  const { dvc_diff, dvc_metrics_diff, tags = [] } = opts;
-  const diff_md = dvc_diff_report_md(dvc_diff);
+  const { dvc_diff, dvc_metrics_diff, hashes = [] } = opts;
   const metrics_diff_md = dvc_metrics_diff_report_md(dvc_metrics_diff);
-  const others_md = others_report_md(tags);
-  
+  const others_md = others_report_md(hashes);
+  const diff_md = dvc_diff_report_md(dvc_diff, MAX_CHARS - (metrics_diff_md.length + others_md.length));
+
   const summary = `### Data \n\n${diff_md} \n\n### Metrics \n\n ${metrics_diff_md} \n\n### Other experiments \n${others_md}`;
 
   return summary;
@@ -104,5 +135,6 @@ document.getElementById("content").innerHTML = html;
 </html>
 `;
 
+exports.METRICS_FORMAT = METRICS_FORMAT;
 exports.dvc_report_md = dvc_report_md;
 exports.md_to_html = md_to_html;

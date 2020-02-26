@@ -4,6 +4,9 @@ const github = require('@actions/github')
 const DVC = require('./src/Dvc')
 const CI = require('./src/CI')
 
+const Report = require('./src/Report')
+Report.METRICS_FORMAT = core.getInput('metrics_format');
+
 const GITHUB_TOKEN = core.getInput('github_token');
 const octokit = new github.GitHub(GITHUB_TOKEN);
 

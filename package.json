@@ -15,6 +15,7 @@
   "dependencies": {
     "@actions/core": "^1.2.0",
     "@actions/github": "^2.0.0",
+    "d3-format": "^1.4.3",
     "json-to-markdown-table2": "^1.0.1",
     "simple-git": "^1.131.0",
     "underscore": "^1.9.2",
