@@ -26,13 +26,11 @@ const getInputArray = (key) => {
 }
 
 const refParser = async (ref) => {
-  //return { label: hash.substr(0, 7), link: 'http://www.google.es' };
-  console.log('refParser');
-  console.log(ref);
   const checks = await octokit.checks.listForRef({ owner, repo, ref });
-  const check = checks.data.check_runs.filter(check => check.name === CI.DVC_TITLE)[0];
+  checks.data.check_runs.forEach(check => { console.log(check)});
 
-  return { label: ref.substr(0, 7), link: check.html_url };
+  //return { label: ref.substr(0, 7), link: check.html_url };
+  return { label: ref.substr(0, 7), link: 'https://www.google.es' };
 }
 
 const check_action_ran_ref = async (opts) => {
