@@ -87,6 +87,7 @@ const run = async () => {
     return;
   }
 
+  console.log('here');
   console.log(await exec('git fetch --depth=1 origin +refs/tags/*:refs/tags/*', { throw_err: false }));
   console.log(await git.log());
 
