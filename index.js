@@ -87,7 +87,7 @@ const run = async () => {
     return;
   }
 
-  await exec('git fetch --depth=1 origin +refs/tags/*:refs/tags/*', { throw_err: false });
+  console.log(await exec('git fetch --depth=1 origin +refs/tags/*:refs/tags/*', { throw_err: false }));
   console.log(await git.log());
 
   await DVC.setup();
