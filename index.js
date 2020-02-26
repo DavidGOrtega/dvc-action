@@ -1,6 +1,7 @@
 const core = require('@actions/core')
 const github = require('@actions/github')
 
+const { exec } = require('./src/utils')
 const DVC = require('./src/Dvc')
 const CI = require('./src/CI')
 
@@ -86,6 +87,7 @@ const run = async () => {
     return;
   }
 
+  await exec('git fetch --depth=1 origin +refs/tags/*:refs/tags/*');
   await DVC.setup();
   await DVC.init_remote({ dvc_pull });
 
