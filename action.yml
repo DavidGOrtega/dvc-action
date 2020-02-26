@@ -18,7 +18,7 @@ inputs:
 
   metrics_format:
     required: false
-    default: '7s'
+    default: '0[.][0000000]'
 
 runs:
   using: 'node12'

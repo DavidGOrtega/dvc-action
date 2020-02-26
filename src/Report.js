@@ -1,12 +1,12 @@
 const json_2_mdtable = require('json-to-markdown-table2')
-const { format } = require('d3-format')
+const numeral = require('numeral');
 
 const MAX_CHARS = 65000;
-let METRICS_FORMAT = '7s';
+let METRICS_FORMAT = '0[.][0000000]';
 
 const dvc_diff_report_md = (data, max_chars) => {
   if (!data)
-    return 'No metrics available';
+    return 'No metrics available'
   
   let summary = '';
   
@@ -24,8 +24,8 @@ const dvc_diff_report_md = (data, max_chars) => {
 
   const warn = '\n:warning: Report excedeed the maximun amount of allowed chars';
   sections.forEach(section => {
-    summary += `<details>\n<summary>${section.lbl}: ${section.files.length}</summary>\n`;
-    summary += `#SECTION${section.lbl}#\n\n${warn}</details>\n`;
+    summary += `<details>\n<summary>${section.lbl}: ${section.files.length}</summary>\n\n`;
+    summary += `#SECTION${section.lbl}#\n${warn}</details>\n`;
   });
 
   let count = summary.length;
@@ -53,20 +53,18 @@ const dvc_metrics_diff_report_md = (data) => {
   if (!data || !Object.keys(data).length)
     return 'No metrics available';
 
-  console.log(METRICS_FORMAT);
-
   const values = [];
 
   for (path in data) {
     const output = data[path];
     for (metric in output) {
-      const new_ = format(METRICS_FORMAT)(output[metric]['new']);
-      const old = format(METRICS_FORMAT)(output[metric]['old']);
+      const new_ = numeral(output[metric]['new']).format(METRICS_FORMAT);
+      const old = numeral(output[metric]['old']).format(METRICS_FORMAT);
 
-      const arrow = output[metric]['diff'] > 0 ? '+' : '-';
+      const arrow = output[metric]['diff'] > 0 ? '+' : '';
       const color = output[metric]['diff'] > 0 ? 'green' : 'red';
       const diff = output[metric]['diff'] ? 
-        `<font color="${color}">${arrow} ${format(METRICS_FORMAT)(output[metric]['diff'])}</font>` :
+        `<font color="${color}">${arrow}${numeral(output[metric]['diff']).format(METRICS_FORMAT)}</font>` :
          'no available';
 
       values.push({ path, metric, old, new: new_, diff });
