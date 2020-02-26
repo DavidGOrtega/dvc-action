@@ -53,6 +53,8 @@ const dvc_metrics_diff_report_md = (data) => {
   if (!data || !Object.keys(data).length)
     return 'No metrics available';
 
+  console.log(METRICS_FORMAT);
+
   const values = [];
 
   for (path in data) {
