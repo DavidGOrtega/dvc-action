@@ -60,7 +60,7 @@ const dvc_report = async (opts) => {
   refs.pop();
 
   let others = refs;
-  if (true || refParser) {
+  if (refParser) {
     for (let i =0; i<others.length; i++) {
       return await refParser(others);
     }  
@@ -76,7 +76,7 @@ const dvc_report = async (opts) => {
     await fs.copyFile(path.join(__dirname, '../assets', 'showdown.min.js'), path.join(output, 'showdown.min.js'));
   }
 
-  return { dvc_diff, dvc_metrics_diff, hashes, md, html };
+  return { dvc_diff, dvc_metrics_diff, others, md, html };
 }
 
 exports.DVC_TITLE = DVC_TITLE;

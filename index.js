@@ -27,8 +27,9 @@ const getInputArray = (key) => {
 
 const refParser = async (ref) => {
   const checks = await octokit.checks.listForRef({ owner, repo, ref });
+  console.log(checks);
   const check = checks.data.check_runs[0];
-  
+
   return { label: hash.substr(0, 7), link: check.html_url };
 }
 
