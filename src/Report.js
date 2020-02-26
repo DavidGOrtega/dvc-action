@@ -1,5 +1,6 @@
 const json_2_mdtable = require('json-to-markdown-table2')
-const numeral = require('numeral');
+const numeral = require('numeral')
+const _ = require('underscore')
 
 const MAX_CHARS = 65000;
 let METRICS_FORMAT = '0[.][0000000]';
@@ -81,9 +82,9 @@ const others_report_md = (hashes, reference) => {
     return 'No other experiments available';
   
   const max = 5;
-  const links = hashes.map(hash => `${hash.substr(0, 7)}`).slice(0, max);
+  const links = _.last(hashes.map(hash => `${hash.substr(0, 7)}`), max);
   const summary = `<details><summary>Experiments</summary>\n\n 
-  Lastest ${max} experiments in the branch:
+  Latest ${Math.min(links.length, max)} experiments in the branch:
   ${links.length > 1 ? links.join(' ') : links[0]}\n</details>`;
 
   return summary;

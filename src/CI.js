@@ -29,36 +29,37 @@ const run_dvc_repro = async (opts) => {
   if (!repro_ran) return;
 
   console.log('Updating remotes');
-
   await exec(`git config --local user.email "${user_email}"`);
   await exec(`git config --local user.name "${user_name}"`);
   await exec(`git remote add remote "${remote}"`, { throw_err: false });
 
   await exec(`git add --all`);
   await exec(`git commit -a -m "dvc repro ${SKIP}"`);
+  await exec('dvc commit');
 
   const sha = (await exec(`git rev-parse HEAD`, { throw_err: false })).replace(/(\r\n|\n|\r)/gm, "");
   const tag = `${DVC_TAG_PREFIX}${sha.slice(0, 7)}`;
 
   console.log('pushing');
-  await exec('dvc push');
   await exec(`git tag ${tag}`, { throw_err: false });
   await exec(`git push remote HEAD:${ref} --tags`, { throw_err: false });
+  await exec('dvc push');
 
   return sha;
 }
 
 const dvc_report = async (opts) => {
-  const { from, to, output, diff_target, metrics_diff_targets } = opts;
+  const { from, to, output, metrics_diff_targets } = opts;
 
-  const dvc_diff = await DVC.diff({ from, to, target: diff_target });
+  const dvc_diff = await DVC.diff({ from, to });
   const dvc_metrics_diff = await DVC.metrics_diff({ from, to, targets: metrics_diff_targets });
 
-  const logs = await git.log()
+  const logs = await git.log();
+  console.log(logs);
   const tags = logs.all.filter(log => log.refs.includes(`${DVC_TAG_PREFIX}`));
-  const hashes = tags.map(tag => tag.hash);
+  const hashes = tags.map(tag => tag.hash).reverse();
+  hashes.pop();
 
-  console.log(hashes);
   const md = await Report.dvc_report_md({ dvc_diff, dvc_metrics_diff, hashes });
   const html = Report.md_to_html(md);
 
@@ -69,7 +70,7 @@ const dvc_report = async (opts) => {
     await fs.copyFile(path.join(__dirname, '../assets', 'showdown.min.js'), path.join(output, 'showdown.min.js'));
   }
 
-  return { dvc_diff, dvc_metrics_diff, md, html };
+  return { dvc_diff, dvc_metrics_diff, hashes, md, html };
 }
 
 exports.DVC_TITLE = DVC_TITLE;
