@@ -61,8 +61,8 @@ const dvc_report = async (opts) => {
 
   let others = refs;
   if (refParser) {
-    for (let i =0; i<others.length; i++) {
-      return await refParser(others);
+    for (let i = 0; i<others.length; i++) {
+      others[i] = await refParser(others[i]);
     }  
   }
 

@@ -26,6 +26,7 @@ const getInputArray = (key) => {
 }
 
 const refParser = async (ref) => {
+  //return { label: hash.substr(0, 7), link: 'http://www.google.es' };
   console.log('refParser');
   console.log(ref);
   const checks = await octokit.checks.listForRef({ owner, repo, ref });
