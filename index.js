@@ -27,7 +27,7 @@ const getInputArray = (key) => {
 
 const refParser = async (ref) => {
   const checks = await octokit.checks.listForRef({ owner, repo, ref });
-  const dvc_checks = checks.data.check_runs.filter(check => {  console.log(check.name); check.name === CI.DVC_TITLE}  );
+  const dvc_checks = checks.data.check_runs.filter(check => {  console.log([check.name, CI.DVC_TITLE]); console.log(check.name === CI.DVC_TITLE); return check.name === CI.DVC_TITLE}  );
   console.log(dvc_checks);
 
   //return { label: ref.substr(0, 7), link: check.html_url };
