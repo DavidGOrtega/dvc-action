@@ -7,7 +7,7 @@
     "dvcreport": "./bin/dvcreport.js"
   },
   "scripts": {
-    "build": "ncc build index.js -o dist -m",
+    "build": "ncc build index.js -o dist",
     "test": "eslint index.js && jest"
   },
   "dependencies": {
