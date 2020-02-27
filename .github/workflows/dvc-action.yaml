@@ -1,58 +1,22 @@
 name: dvc-action
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
-  run:
-    # if: "!contains(github.event.commits[0].message, '[ci skip]')"
-
+  check:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
+    - uses: actions/checkout@v1
 
-      - name: setup python 
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.6
+    - name: "npm ci"
+      run: npm ci
 
-      - name: setup data case
-        run: |
-          pip install dvc
-          
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+    - name: "npm run build"
+      run: npm run build
 
-          dvc init --force
-          dvc install
-
-          mkdir data
-          for i in {1..10}
-          do
-            echo creating file ./data/sample$i
-            echo "sample$i" >> ./data/sample$i
-          done
-
-          dvc add data
-          git add .gitignore data.dvc
-          git commit -m "v1"
-
-          for i in {11..25}
-          do
-            echo creating file ./data/sample$i
-            echo "sample$i" >> ./data/sample$i
-          done
-          rm data/sample1
-          rm data/sample2
-          echo modified >> data/sample3
-
-          dvc commit -f -q
-          git add data.dvc
-          git commit -m "v2"
-
-      - uses: ./
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          dvc_repro_file: 'None'
-        env:
-          STUB: true
+    - name: "check"
+      run: |
+        git diff --exit-code --stat -- . ':!node_modules' \
+        || (echo "##[error] run 'npm run build' before commiting to repo" \
+        && exit 1)
