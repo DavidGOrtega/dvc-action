@@ -16,6 +16,10 @@ const {
   GITHUB_WORKFLOW
 } = process.env;
 
+
+
+
+
 const GITHUB_TOKEN = core.getInput('github_token');
 const octokit = new github.GitHub(GITHUB_TOKEN);
 const [owner, repo] = GITHUB_REPOSITORY.split('/');

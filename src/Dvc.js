@@ -70,7 +70,7 @@ const init_remote = async opts => {
     if (GOOGLE_APPLICATION_CREDENTIALS) {
       const path = '.dvc/tmp/GOOGLE_APPLICATION_CREDENTIALS.json';
       await fs.writeFile(path, GDRIVE_USER_CREDENTIALS);
-      process.env['GOOGLE_APPLICATION_CREDENTIALS'] = path;
+      process.env.GOOGLE_APPLICATION_CREDENTIALS = path;
     } else {
       throw new Error(
         `Google storage dvc remote found but no credentials found`
