@@ -123,7 +123,7 @@ const run = async () => {
     refParser
   });
 
-  console.log('Creating check');
+  console.log('Creating Check');
   await create_check_dvc_report({
     owner,
     repo,
