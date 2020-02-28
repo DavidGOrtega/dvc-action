@@ -17,11 +17,11 @@
   },
   "lint-staged": {
     "*.{js}": [
-      "npx eslint --fix",
+      "eslint --fix",
       "git add"
     ],
     "*.md": [
-      "npx prettier --write",
+      "prettier --write",
       "git add"
     ]
   },
