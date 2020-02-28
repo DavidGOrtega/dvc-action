@@ -6,7 +6,7 @@
     "dvcreport": "./bin/dvcreport.js"
   },
   "scripts": {
-    "lint": "eslint --check",
+    "lint": "eslint ./",
     "build": "ncc build index.js -o dist -m",
     "test": "jest"
   },
