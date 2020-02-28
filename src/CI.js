@@ -62,7 +62,6 @@ const dvc_report = async opts => {
   });
 
   const logs = await git.log();
-  console.log(logs);
   const tags = logs.all.filter(log => log.refs.includes(`${DVC_TAG_PREFIX}`));
   const refs = tags.map(tag => tag.hash).reverse();
   refs.pop();
