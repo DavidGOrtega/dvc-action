@@ -66,7 +66,10 @@ const init_remote = async opts => {
 
   // gs
   if (dvc_remote_list.includes('gs://')) {
-    const { GOOGLE_APPLICATION_CREDENTIALS } = process.env;
+    const {
+      GOOGLE_APPLICATION_CREDENTIALS,
+      GDRIVE_USER_CREDENTIALS
+    } = process.env;
     if (GOOGLE_APPLICATION_CREDENTIALS) {
       const path = '.dvc/tmp/GOOGLE_APPLICATION_CREDENTIALS.json';
       await fs.writeFile(path, GDRIVE_USER_CREDENTIALS);
@@ -122,7 +125,10 @@ const init_remote = async opts => {
 const repro = async opts => {
   const { targets = [] } = opts;
   const targets_param = targets.length ? targets.join(' ') : '';
-  return await exec(`dvc repro ${targets_param}`, { throw_err: false });
+  const dvc_out = await exec(`dvc repro ${targets_param}`, {
+    throw_err: false
+  });
+  return dvc_out;
 };
 
 const diff = async opts => {
