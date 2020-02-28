@@ -12,6 +12,14 @@ jobs:
     - name: "npm ci"
       run: npm ci
 
-    - name: "npm run lint"
+    - name: "lint"
       run: npm run lint
-      
+
+    - name: "build"
+      run: npm run build
+
+    - name: "check"
+      run: |
+        git diff --exit-code --stat -- . ':!node_modules' \
+        || (echo "##[error] run 'npm run build' before commiting to repo" \
+        && exit 1)
