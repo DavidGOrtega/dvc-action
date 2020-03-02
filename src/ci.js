@@ -1,6 +1,7 @@
-const { git, exec, fs, path } = require('./utils');
-const DVC = require('./Dvc');
-const Report = require('./Report');
+const { git, exec, fs } = require('./utils');
+const path = require('path');
+const DVC = require('./dvc');
+const Report = require('./report');
 
 const DVC_TITLE = 'Dvc Report';
 const DVC_TAG_PREFIX = 'dvc_';
@@ -8,7 +9,6 @@ const SKIP = '[ci skip]';
 
 const commit_skip_ci = async () => {
   const last_log = await exec('git log -1');
-  console.log(last_log);
   return last_log.includes(SKIP);
 };
 
