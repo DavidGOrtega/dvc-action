@@ -51,6 +51,28 @@ const run_dvc_repro = async opts => {
   return sha;
 };
 
+const dvc_refs = async () => {
+  const logs = await git.log();
+  const tags = logs.all.filter(log => log.refs.includes(`${DVC_TAG_PREFIX}`));
+  const refs = tags.map(tag => tag.hash).reverse();
+
+  return refs;
+};
+
+const dvc_ref = async opts => {
+  const { ref = 'first' } = opts;
+
+  const refs = await dvc_refs();
+  console.log(refs);
+
+  if (ref === 'prev') return refs[Math.max(refs.length - 2, 0)];
+  if (ref === 'first') return refs[0];
+
+  const sha = await git.revparse(ref);
+
+  return sha;
+};
+
 const dvc_report = async opts => {
   const { from, to, output, metrics_diff_targets, refParser } = opts;
 
@@ -61,12 +83,8 @@ const dvc_report = async opts => {
     targets: metrics_diff_targets
   });
 
-  const logs = await git.log();
-  const tags = logs.all.filter(log => log.refs.includes(`${DVC_TAG_PREFIX}`));
-  const refs = tags.map(tag => tag.hash).reverse();
-  refs.pop();
-
-  const others = refs;
+  const refs = await dvc_refs();
+  const others = refs.pop();
   if (refParser) {
     for (let i = 0; i < others.length; i++) {
       others[i] = await refParser(others[i]);
@@ -96,4 +114,6 @@ exports.DVC_TITLE = DVC_TITLE;
 exports.SKIP = SKIP;
 exports.commit_skip_ci = commit_skip_ci;
 exports.run_dvc_repro = run_dvc_repro;
+exports.dvc_refs = dvc_refs;
+exports.dvc_ref = dvc_ref;
 exports.dvc_report = dvc_report;

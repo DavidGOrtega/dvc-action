@@ -61,11 +61,12 @@ jobs:
 
 ## Input variables
 
-| Variable             | Type   | Required | Default | Info                                                                                       |
-| -------------------- | ------ | -------- | ------- | ------------------------------------------------------------------------------------------ |
-| github_token         | string | yes      |         | Is the github_token, this is setted automatically by Github as a secret.                   |
-| repro_targets        | string | no       | Dvcfile | Comma delimited array of DVC files. If None is given will skip the process.                |
-| metrics_diff_targets | string | no       |         | Comma delimited array of metrics files. If not specified will ask for all the metric files |
+| Variable             | Type   | Required | Default | Info                                                                                                                                                                                                                                           |
+| -------------------- | ------ | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| github_token         | string | yes      |         | Is the github_token, this is setted automatically by Github as a secret.                                                                                                                                                                       |
+| repro_targets        | string | no       | Dvcfile | Comma delimited array of DVC files. If None is given will skip the process.                                                                                                                                                                    |
+| metrics_diff_targets | string | no       |         | Comma delimited array of metrics files. If not specified will ask for all the metric files                                                                                                                                                     |
+| ref                  | string | no       | first   | Possible values are `first` `prev` `last` or any known ref like HEAD, origin/master, or commit sha. `first` stands for the first experiment in the branch, `prev` is the previous experiment to last and `last` is normally equivalent to HEAD |
 
 ### Support for [ci skip] comment
 
