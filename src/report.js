@@ -30,7 +30,7 @@ const dvc_diff_report_md = (data, max_chars) => {
     section.summary = '';
 
     section.files.forEach(file => {
-      const file_text = ` - <font size="2">${file.path}</font> \n`;
+      const file_text = ` - ${file.path} \n`;
       count += file_text.length;
 
       if (count < max_chars) section.summary += file_text;
@@ -57,9 +57,9 @@ const dvc_metrics_diff_report_md = data => {
       const arrow = output[metric].diff > 0 ? '+' : '';
       const color = output[metric].diff > 0 ? 'green' : 'red';
       const diff = output[metric].diff
-        ? `<font color="${color}">${arrow}${numeral(output[metric].diff).format(
-            METRICS_FORMAT
-          )}</font>`
+        ? `<span style="color: ${color}">${arrow}${numeral(
+            output[metric].diff
+          ).format(METRICS_FORMAT)}</span>`
         : 'no available';
 
       values.push({ path, metric, old, new: new_, diff });
