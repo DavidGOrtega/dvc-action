@@ -1,4 +1,5 @@
-const { exec, fs } = require('./utils');
+const { exec } = require('./utils');
+const fs = require('fs').promises;
 
 const setup = async () => {
   try {

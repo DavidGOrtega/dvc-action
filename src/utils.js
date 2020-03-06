@@ -1,29 +1,17 @@
 const util = require('util');
-const fs = require('fs').promises;
 const git = require('simple-git/promise');
-
-fs.exists = async file => {
-  try {
-    await fs.access(file, fs.F_OK);
-  } catch (err) {
-    return false;
-  }
-
-  return true;
-};
 
 const execp = util.promisify(require('child_process').exec);
 const exec = async (command, opts) => {
   const { debug, throw_err = true } = opts || {};
-  const { stdout, stderr } = await execp(command);
+  const { error, stdout, stderr } = await execp(command);
 
   if (debug) console.log(`\nCommand: ${command}\n\t${stdout}\n\t${stderr}`);
 
-  if (throw_err && stderr) throw new Error(stderr);
+  if (throw_err && error) throw new Error(stderr);
 
   return stdout;
 };
 
-exports.fs = fs;
 exports.exec = exec;
 exports.git = git('./');
