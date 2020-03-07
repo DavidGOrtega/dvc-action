@@ -77,9 +77,6 @@ const create_check_dvc_report = async opts => {
 };
 
 const run = async () => {
-  console.log('NO MORE');
-  console.log(await exec('git fetch --prune --unshallow'));
-
   const is_pr = GITHUB_EVENT_NAME === 'pull_request';
   const ref = is_pr ? GITHUB_HEAD_REF : GITHUB_REF;
   const head_sha = GITHUB_SHA;
@@ -96,6 +93,9 @@ const run = async () => {
     console.log(`${CI.SKIP} found; skipping task`);
     return;
   }
+
+  console.log('Fetching...');
+  await exec('git fetch --prune --unshallow');
 
   if (is_pr && (await check_action_ran_ref({ owner, repo, ref }))) {
     console.log(
