@@ -3,7 +3,7 @@ const github = require('@actions/github');
 
 const DVC = require('./src/dvc');
 const CI = require('./src/ci');
-const { exec } = require('./src/utils');
+// const { exec } = require('./src/utils');
 
 const Report = require('./src/report');
 Report.METRICS_FORMAT = core.getInput('metrics_format');
@@ -81,7 +81,7 @@ const run = async () => {
   console.log('THIS IS HEREEEEEE!!');
   console.log('here');
   console.log('here');
-  console.log(await exec('git fetch --prune --unshallow'));
+  // console.log(await exec('git fetch --prune --unshallow'));
 
   const is_pr = GITHUB_EVENT_NAME === 'pull_request';
   const ref = is_pr ? GITHUB_HEAD_REF : GITHUB_REF;
