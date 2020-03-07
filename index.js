@@ -3,6 +3,7 @@ const github = require('@actions/github');
 
 const DVC = require('./src/dvc');
 const CI = require('./src/ci');
+const { exec } = require('./src/utils');
 
 const Report = require('./src/report');
 Report.METRICS_FORMAT = core.getInput('metrics_format');
@@ -76,6 +77,8 @@ const create_check_dvc_report = async opts => {
 };
 
 const run = async () => {
+  await exec('git fetch --prune --unshallow');
+
   const is_pr = GITHUB_EVENT_NAME === 'pull_request';
   const ref = is_pr ? GITHUB_HEAD_REF : GITHUB_REF;
   const head_sha = GITHUB_SHA;
@@ -103,7 +106,7 @@ const run = async () => {
   await DVC.setup();
   await DVC.init_remote({ dvc_pull });
 
-  const repro_ran = await CI.run_dvc_repro({
+  const repro_ran = await CI.run_dvc_repro_push({
     user_email,
     user_name,
     remote,
@@ -111,7 +114,7 @@ const run = async () => {
     repro_targets
   });
 
-  console.log('Generating Dvc Report');
+  console.log('Generating DVC Report');
   const from = core.getInput('rev');
   const to = repro_ran || '';
   const dvc_report_out = await CI.dvc_report({
