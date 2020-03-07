@@ -78,6 +78,9 @@ const create_check_dvc_report = async opts => {
 
 const run = async () => {
   console.log('here');
+  console.log('THIS IS HEREEEEEE!!');
+  console.log('here');
+  console.log('here');
   console.log(await exec('git fetch --prune --unshallow'));
 
   const is_pr = GITHUB_EVENT_NAME === 'pull_request';
