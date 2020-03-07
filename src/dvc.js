@@ -6,7 +6,7 @@ const setup = async () => {
     await exec('dvc version');
   } catch (err) {
     console.log('Installing Dvc ...');
-    await exec('apt update');
+    // await exec('apt update');
     await exec('pip3 uninstall -y enum34', { throw_err: false });
     await exec('pip3 install --quiet dvc[all]');
 
