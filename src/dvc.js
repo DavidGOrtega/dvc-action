@@ -21,10 +21,6 @@ const setup_remote = async opts => {
 
   console.log('Setting DVC remote ...');
 
-  console.log(process.env);
-  console.log(await exec('ls'));
-  console.log(await exec('ls  ./.dvc/tmp'));
-
   const dvc_remote_list = (
     await exec('dvc remote list', { throw_err: false })
   ).toLowerCase();
@@ -33,6 +29,8 @@ const setup_remote = async opts => {
   if (!has_dvc_remote) throw new Error('Experiment does not have DVC remote!');
 
   await fs.mkdir('.dvc/tmp', { recursive: true });
+  console.log(await exec('ls'));
+  console.log(await exec('ls  ./.dvc/tmp'));
 
   // s3
   if (dvc_remote_list.includes('s3://')) {
