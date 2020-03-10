@@ -32,6 +32,8 @@ const setup_remote = async opts => {
 
   if (!has_dvc_remote) throw new Error('Experiment does not have DVC remote!');
 
+  await fs.mkdir('.dvc/tmp', { recursive: true });
+
   // s3
   if (dvc_remote_list.includes('s3://')) {
     const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
