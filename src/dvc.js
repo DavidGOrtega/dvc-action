@@ -116,7 +116,7 @@ const setup_remote = async opts => {
     await exec('dvc pull -f');
     console.log('Pulling from DVC remote completed');
   } catch (err) {
-    console.error('Failed pulling from DVC remote');
+    console.error('Failed pulling from DVC remotesssss');
     console.error(err);
   }
 };
