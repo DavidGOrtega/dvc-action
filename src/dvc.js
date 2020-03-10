@@ -22,6 +22,8 @@ const setup_remote = async opts => {
   console.log('Setting DVC remote ...');
 
   console.log(process.env);
+  console.log(await exec('ls'));
+  console.log(await exec('ls  ./.dvc/tmp'));
 
   const dvc_remote_list = (
     await exec('dvc remote list', { throw_err: false })
