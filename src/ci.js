@@ -4,7 +4,7 @@ const fs = require('fs').promises;
 const DVC = require('./dvc');
 const Report = require('./report');
 
-const DVC_TITLE = 'Dvc Report';
+const DVC_TITLE = 'DVC Report';
 const DVC_TAG_PREFIX = 'dvc_';
 const SKIP = '[ci skip]';
 
@@ -26,8 +26,8 @@ const run_dvc_repro_push = async opts => {
   const dvc_repro = await DVC.repro({ targets: repro_targets });
   console.log(dvc_repro);
 
-  const repro_ran = !dvc_repro.includes('pipelines are up to date');
-  if (!repro_ran) return;
+  const git_status = await git.status();
+  if (!git_status.files.length) return;
 
   console.log('Updating remotes');
   await exec(`git config --local user.email "${user_email}"`);

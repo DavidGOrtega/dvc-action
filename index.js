@@ -1,9 +1,9 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 
+const { exec } = require('./src/utils');
 const DVC = require('./src/dvc');
 const CI = require('./src/ci');
-const { exec } = require('./src/utils');
 
 const Report = require('./src/report');
 Report.METRICS_FORMAT = core.getInput('metrics_format');
@@ -89,13 +89,13 @@ const run = async () => {
   const repro_targets = getInputArray('repro_targets');
   const metrics_diff_targets = getInputArray('metrics_diff_targets');
 
+  console.log('Fetching...');
+  await exec('git fetch --prune --unshallow');
+
   if (await CI.commit_skip_ci()) {
     console.log(`${CI.SKIP} found; skipping task`);
     return;
   }
-
-  console.log('Fetching...');
-  await exec('git fetch --prune --unshallow');
 
   if (is_pr && (await check_action_ran_ref({ owner, repo, ref }))) {
     console.log(
@@ -105,7 +105,7 @@ const run = async () => {
   }
 
   await DVC.setup();
-  await DVC.init_remote({ dvc_pull });
+  await DVC.setup_remote({ dvc_pull });
 
   const repro_ran = await CI.run_dvc_repro_push({
     user_email,

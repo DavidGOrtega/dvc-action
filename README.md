@@ -10,7 +10,23 @@
 DVC is a great tool as a data versioning system, but also is great as a build
 tool for ML experimentation. This action offers the possibility of using DVC to
 establish your ML pipeline to be run by Github Actions CI/CD were you could use
-your own runners with special capabilities like GPUs.
+[your own runners](https://help.github.com/en/actions/hosting-your-own-runners)
+with special capabilities like GPUs.
+
+Major beneficts of using DVC-action in your ML projects includes:
+
+- Reproducibility: DVC is always in charge of maintain your experiment tracking
+  all the dependencies, so you don't have to. Additionally your experiment is
+  always running under the same software constrains so you dont have to worry
+  about replicating the same enviroment again.
+- Observability: DVC offers you metrics to be tracked. In DVC-action we make
+  those metrics more human friendly and we also offer direct access to other
+  experiments run.
+- Releases: DVC-action tags every experiment that runs with repro. Aside of that
+  DVC-action is just a job inside your workflow that could generate your model
+  releases or deployment according to your bussiness requirements.
+- Teaming: Give visibility to your experiments or releases to your teammates
+  working toguether.
 
 The action performs in your push or pull requests:
 
@@ -24,12 +40,16 @@ The action performs in your push or pull requests:
 
 ## Usage
 
+> :eyes: Knowledge of [Github Actions](https://help.github.com/en/actions) and
+> [DVC pipeline](https://dvc.org/doc/get-started/pipeline) is very useful for a
+> fully comprenhension.
+
 This action depends on:
 
 - actions/checkout V2
 - actions/setup-python
 
-Simple example of your workflow with DVC action:
+Example of a simple DVC-action workflow:
 
 ```yaml
 name: your-workflow-name
@@ -42,8 +62,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - run: |
-          git fetch --prune --unshallow
 
       - name: setup python
         uses: actions/setup-python@v1
@@ -59,24 +77,40 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 ```
 
+This workflow will run everytime that you push code or do a Pull Request. When
+triggered DVC-action will setup the runner and DVC will run the pipelines
+specified by repro_targets. Two scenarios may happen:
+
+1. DVC repro is up to date and there is nothing to do. This means that the
+   commit that you have done in your code is not related to your DVC pipelines
+   and there is nothing to do.
+2. DVC pipeline has changed and DVC will run repro, updating the output that may
+   generate (models, data...) in your DVC remote storage and then commiting,
+   tagging and pushing the changes in git remote.
+
+Additionally, you may extend your workflow to generate your releases or even
+deploy automatically your models.
+
 ## Input variables
 
-| Variable             | Type   | Required | Default       | Info                                                                                    |
-| -------------------- | ------ | -------- | ------------- | --------------------------------------------------------------------------------------- |
-| github_token         | string | yes      |               | Is the github_token, this is setted automatically by Github as a secret.                |
-| repro_targets        | string | no       | Dvcfile       | Comma delimited array of DVC files. If None is given will skip the process.             |
-| metrics_diff_targets | string | no       |               | Comma delimited array of metrics files. If not specified will use all the metric files  |
-| rev                  | string | no       | origin/master | Revision to be compared with current experiment. I.E. HEAD~1. Dafaults to origin/master |
+| Variable             | Type   | Required | Default       | Info                                                                                   |
+| -------------------- | ------ | -------- | ------------- | -------------------------------------------------------------------------------------- |
+| github_token         | string | yes      |               | Is the github_token, this is setted automatically by Github as a secret.               |
+| repro_targets        | string | no       | Dvcfile       | Comma delimited array of DVC files. If None is given will skip the process.            |
+| metrics_diff_targets | string | no       |               | Comma delimited array of metrics files. If not specified will use all the metric files |
+| rev                  | string | no       | origin/master | Revision to be compared with current experiment. I.E. HEAD~1.                          |
 
 ### Support for [ci skip] comment
 
-If your commit comment includes the tag the DVC action will skip returning a 0
-status code (success). Github is only accepting 0 or 1 as status codes. Any
-value like 78 for neutral is invalid.
+Many CI/CD verdors supports a special comment [ci skip] in the commit avoid run
+the CI. We support this, ff your commit comment includes the tag the DVC action
+will skip the CI returning an exit code of 0. We know that ideally the code
+should be 78 however, at the time of this writing, Github is only accepting 0 or
+1 as status codes.
 
 ### env variables
 
-DVC remote is set using env variables see
+DVC remote is setup using env variables see
 [Working with DVC remotes](#working-with-dvc-remotes).
 
 ## Working with DVC remotes
@@ -105,7 +139,7 @@ to keep them secure.
     AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
 ```
 
-:point_right: AWS_SESSION_TOKEN is optional.
+> :point_right: AWS_SESSION_TOKEN is optional.
 
 #### Azure
 
@@ -128,9 +162,9 @@ env:
 
 #### Google Storage
 
-:warning: Normally, GOOGLE_APPLICATION_CREDENTIALS points to the path of the
-json file that contains the credentials. However in the action this variable
-CONTAINS the content of the file. Copy that json and add it as a secret.
+> :warning: Normally, GOOGLE_APPLICATION_CREDENTIALS points to the path of the
+> json file that contains the credentials. However in the action this variable
+> CONTAINS the content of the file. Copy that json and add it as a secret.
 
 ```yaml
 env:
@@ -139,11 +173,11 @@ env:
 
 #### Google Drive
 
-:warning: After configuring your
-[Google Drive credentials](https://dvc.org/doc/command-reference/remote/add) you
-will find a json file at
-`your_project_path/.dvc/tmp/gdrive-user-credentials.json`. Copy that json and
-add it as a secret.
+> :warning: After configuring your
+> [Google Drive credentials](https://dvc.org/doc/command-reference/remote/add)
+> you will find a json file at
+> `your_project_path/.dvc/tmp/gdrive-user-credentials.json`. Copy that json and
+> add it as a secret.
 
 ```yaml
 env:
