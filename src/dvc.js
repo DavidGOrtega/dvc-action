@@ -21,6 +21,8 @@ const setup_remote = async opts => {
 
   console.log('Setting DVC remote ...');
 
+  console.log(process.env);
+
   const dvc_remote_list = (
     await exec('dvc remote list', { throw_err: false })
   ).toLowerCase();
@@ -67,7 +69,6 @@ const setup_remote = async opts => {
 
   // gs
   if (dvc_remote_list.includes('gs://')) {
-    console.log(process.env);
     const { GOOGLE_APPLICATION_CREDENTIALS } = process.env;
     if (GOOGLE_APPLICATION_CREDENTIALS) {
       const path = '.dvc/tmp/GOOGLE_APPLICATION_CREDENTIALS.json';
