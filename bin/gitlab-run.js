@@ -24,7 +24,7 @@ const run = async () => {
   const remote = CI_REPOSITORY_URL;
 
   const dvc_pull = process.env.dvc_pull || true;
-  const repro_targets = getInputArray('repro_targets');
+  const repro_targets = ['eval.dvc']; // getInputArray('repro_targets');
   const metrics_diff_targets = getInputArray('metrics_diff_targets');
 
   if (await CI.commit_skip_ci()) {
