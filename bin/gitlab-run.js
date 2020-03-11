@@ -60,4 +60,7 @@ const run = async () => {
   console.log(dvc_report_out);
 };
 
-run().catch(e => console.log(e.message));
+run().catch(e => {
+  console.log(e.message);
+  return 1;
+});
