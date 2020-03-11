@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const DVC = require('./src/dvc');
-const CI = require('./src/ci');
+const DVC = require('./../src/dvc');
+const CI = require('./../src/ci');
 
 const {
   GITLAB_USER_EMAIL,
