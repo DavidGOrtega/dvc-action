@@ -8,8 +8,9 @@ const {
   GITLAB_USER_NAME,
   // CI_COMMIT_SHA,
   // CI_COMMIT_BEFORE_SHA,
-  CI_REPOSITORY_URL,
-  CI_COMMIT_REF_NAME
+  CI_PROJECT_PATH,
+  CI_COMMIT_REF_NAME,
+  GITLAB_TOKEN
 } = process.env;
 
 const getInputArray = key => {
@@ -17,11 +18,12 @@ const getInputArray = key => {
 };
 
 const run = async () => {
+  const [owner, repo] = CI_PROJECT_PATH.split('/');
   const ref = CI_COMMIT_REF_NAME;
 
   const user_email = GITLAB_USER_EMAIL;
   const user_name = GITLAB_USER_NAME;
-  const remote = CI_REPOSITORY_URL;
+  const remote = `https://${owner}:${GITLAB_TOKEN}@gitlab.com/${owner}/${repo}.git`;
 
   const dvc_pull = process.env.dvc_pull || true;
   const repro_targets = ['eval.dvc']; // getInputArray('repro_targets');
