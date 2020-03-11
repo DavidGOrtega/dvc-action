@@ -13,8 +13,10 @@ const {
   GITLAB_TOKEN
 } = process.env;
 
-const getInputArray = key => {
-  return process.env[key] ? process.env[key].split(/[ ,]+/) : [];
+const getInputArray = (key, default_value) => {
+  return process.env[key]
+    ? process.env[key].split(/[ ,]+/)
+    : default_value || [];
 };
 
 const run = async () => {
@@ -26,7 +28,7 @@ const run = async () => {
   const remote = `https://${owner}:${GITLAB_TOKEN}@gitlab.com/${owner}/${repo}.git`;
 
   const dvc_pull = process.env.dvc_pull || true;
-  const repro_targets = ['eval.dvc']; // getInputArray('repro_targets');
+  const repro_targets = getInputArray('repro_targets', ['Dvcfile']);
   const metrics_diff_targets = getInputArray('metrics_diff_targets');
 
   if (await CI.commit_skip_ci()) {
