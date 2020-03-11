@@ -29,8 +29,6 @@ const setup_remote = async opts => {
   if (!has_dvc_remote) throw new Error('Experiment does not have DVC remote!');
 
   await fs.mkdir('.dvc/tmp', { recursive: true });
-  console.log(await exec('ls'));
-  console.log(await exec('ls  ./.dvc/tmp'));
 
   // s3
   if (dvc_remote_list.includes('s3://')) {
@@ -85,11 +83,8 @@ const setup_remote = async opts => {
 
   // gdrive
   if (dvc_remote_list.includes('gdrive://')) {
-    const { GDRIVE_USER_CREDENTIALS } = process.env;
-    if (GDRIVE_USER_CREDENTIALS) {
-      const path = '.dvc/tmp/gdrive-user-credentials.json';
-      await fs.writeFile(path, GDRIVE_USER_CREDENTIALS);
-    } else {
+    const { GDRIVE_USER_CREDENTIALS_DATA } = process.env;
+    if (!GDRIVE_USER_CREDENTIALS_DATA) {
       throw new Error(`Google drive DVC remote found but no credentials found`);
     }
   }
@@ -116,7 +111,7 @@ const setup_remote = async opts => {
     await exec('dvc pull -f');
     console.log('Pulling from DVC remote completed');
   } catch (err) {
-    console.error('Failed pulling from DVC remotesssss');
+    console.error('Failed pulling from DVC remote');
     console.error(err);
   }
 };
