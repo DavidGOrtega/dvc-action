@@ -58,8 +58,6 @@ const run = async () => {
   });
 
   console.log(dvc_report_out);
-
-  throw new Error('error');
 };
 
 run().catch(e => {
