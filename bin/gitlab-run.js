@@ -58,9 +58,11 @@ const run = async () => {
   });
 
   console.log(dvc_report_out);
+
+  throw new Error('error');
 };
 
 run().catch(e => {
   console.log(e.message);
-  return 1;
+  process.exit(1);
 });
