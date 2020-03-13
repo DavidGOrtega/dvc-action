@@ -5,8 +5,8 @@ const { exec } = require('./src/utils');
 const DVC = require('./src/dvc');
 const CI = require('./src/ci');
 
-const Report = require('./src/report');
-Report.METRICS_FORMAT = core.getInput('metrics_format');
+// const Report = require('./src/report');
+// Report.METRICS_FORMAT = core.getInput('metrics_format');
 
 const {
   GITHUB_REPOSITORY,
@@ -14,17 +14,20 @@ const {
   GITHUB_HEAD_REF,
   GITHUB_REF,
   GITHUB_SHA,
-  GITHUB_WORKFLOW
+  GITHUB_WORKFLOW,
+  GITHUB_TOKEN
 } = process.env;
 
-const GITHUB_TOKEN = core.getInput('github_token');
-console.log(process.env);
+// const GITHUB_TOKEN = core.getInput('github_token');
+// console.log(process.env);
 console.log(`GITHUB_TOKEN=${GITHUB_TOKEN}`);
 const octokit = new github.GitHub(GITHUB_TOKEN);
 const [owner, repo] = GITHUB_REPOSITORY.split('/');
 
-const getInputArray = key => {
-  return core.getInput(key) ? core.getInput(key).split(/[ ,]+/) : [];
+const getInputArray = (key, default_value) => {
+  return process.env[key]
+    ? process.env[key].split(/[ ,]+/)
+    : default_value || [];
 };
 
 const refParser = async ref => {
@@ -87,9 +90,10 @@ const run = async () => {
   const user_name = 'GitHub Action';
   const remote = `https://${owner}:${GITHUB_TOKEN}@github.com/${owner}/${repo}.git`;
 
-  const dvc_pull = core.getInput('dvc_pull');
-  const repro_targets = getInputArray('repro_targets');
+  const dvc_pull = process.env.dvc_pull || true;
+  const repro_targets = getInputArray('repro_targets', ['Dvcfile']);
   const metrics_diff_targets = getInputArray('metrics_diff_targets');
+  const from = process.env.rev || 'origin/master';
 
   console.log('Fetch all history for all tags and branches');
   await exec('git fetch --prune --unshallow');
@@ -118,7 +122,6 @@ const run = async () => {
   });
 
   console.log('Generating DVC Report');
-  const from = core.getInput('rev');
   const to = repro_ran || '';
   const dvc_report_out = await CI.dvc_report({
     from,
