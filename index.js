@@ -18,6 +18,8 @@ const {
 } = process.env;
 
 const GITHUB_TOKEN = core.getInput('github_token');
+console.log(process.env);
+console.log(`GITHUB_TOKEN=${GITHUB_TOKEN}`);
 const octokit = new github.GitHub(GITHUB_TOKEN);
 const [owner, repo] = GITHUB_REPOSITORY.split('/');
 
