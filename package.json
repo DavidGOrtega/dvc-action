@@ -15,8 +15,6 @@
   "main": "index.js",
   "bin": {
     "dvcreport": "./bin/dvcreport.js",
-    "gitlab_run": "./bin/gitlab-run.js",
-    "github_run": "./bin/github-run.js",
     "dvc_action_run": "./bin/dvc-action-run.js"
   },
   "scripts": {
