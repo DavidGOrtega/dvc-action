@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { exec } = require('./src/utils');
+const { exec } = require('./../src/utils');
 const DVC = require('./../src/dvc');
 const CI = require('./../src/ci');
 
@@ -39,7 +39,8 @@ const run = async () => {
   }
 
   console.log('Fetch all history for all tags and branches');
-  await exec('git fetch --prune --unshallow');
+  await exec('git checkout -B "$CI_BUILD_REF_NAME" "$CI_BUILD_REF"');
+  await exec('git fetch --prune');
 
   await DVC.setup();
   await DVC.setup_remote({ dvc_pull });
