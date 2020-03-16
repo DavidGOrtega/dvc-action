@@ -1,16 +1,17 @@
 #!/usr/bin/env node
 
+const { exec } = require('./src/utils');
 const DVC = require('./../src/dvc');
 const CI = require('./../src/ci');
 
 const {
-  GITLAB_USER_EMAIL,
-  GITLAB_USER_NAME,
-  // CI_COMMIT_SHA,
-  // CI_COMMIT_BEFORE_SHA,
   CI_PROJECT_PATH,
   CI_COMMIT_REF_NAME,
-  GITLAB_TOKEN
+  // CI_COMMIT_SHA,
+  // CI_COMMIT_BEFORE_SHA,
+  GITLAB_TOKEN,
+  GITLAB_USER_EMAIL,
+  GITLAB_USER_NAME
 } = process.env;
 
 const getInputArray = (key, default_value) => {
@@ -32,18 +33,13 @@ const run = async () => {
   const metrics_diff_targets = getInputArray('metrics_diff_targets');
   const from = process.env.rev || 'origin/master';
 
-  console.log(repro_targets);
-  console.log(metrics_diff_targets);
-  console.log(from);
-  console.log(dvc_pull);
-
   if (await CI.commit_skip_ci()) {
     console.log(`${CI.SKIP} found; skipping task`);
     return;
   }
 
-  // console.log('Fetch all history for all tags and branches');
-  // await exec('git fetch --prune --unshallow');
+  console.log('Fetch all history for all tags and branches');
+  await exec('git fetch --prune --unshallow');
 
   await DVC.setup();
   await DVC.setup_remote({ dvc_pull });

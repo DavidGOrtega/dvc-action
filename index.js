@@ -1,6 +1,3 @@
-const core = require('@actions/core');
-const github = require('@actions/github');
-
 const { exec } = require('./src/utils');
 const DVC = require('./src/dvc');
 const CI = require('./src/ci');
@@ -10,17 +7,16 @@ const CI = require('./src/ci');
 
 const {
   GITHUB_REPOSITORY,
-  GITHUB_EVENT_NAME,
   GITHUB_HEAD_REF,
   GITHUB_REF,
   GITHUB_SHA,
+  GITHUB_TOKEN,
   GITHUB_WORKFLOW,
-  GITHUB_TOKEN
+  GITHUB_EVENT_NAME
 } = process.env;
 
-// const GITHUB_TOKEN = core.getInput('github_token');
-// console.log(process.env);
-console.log(`GITHUB_TOKEN=${GITHUB_TOKEN}`);
+const core = require('@actions/core');
+const github = require('@actions/github');
 const octokit = new github.GitHub(GITHUB_TOKEN);
 const [owner, repo] = GITHUB_REPOSITORY.split('/');
 
