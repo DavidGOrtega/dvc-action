@@ -24,8 +24,8 @@ RUN apt install -y nodejs
 # RUN npm install -g iterative/dvc-cicd#master
 #RUN npm install -g git+https://${GITHUB_TOKEN}:x-oauth-basic@github.com/DavidGOrtega/dvc-action.git#gitlab
 
-ADD "./../" "/dvc-action"
+ADD "./" "/dvc-action"
 RUN npm install -g /dvc-action
 
-COPY "entrypoint.sh" "/entrypoint.sh"
+COPY "./docker/entrypoint.sh" "/entrypoint.sh"
 CMD ["/entrypoint.sh"]

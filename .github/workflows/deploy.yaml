@@ -18,5 +18,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           dockerfile: ./docker/Dockerfile
+          context: ./
           tags: dev
           buildargs: GITHUB_TOKEN
