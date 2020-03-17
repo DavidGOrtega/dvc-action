@@ -11,8 +11,6 @@ jobs:
 
       - name: Publish to dockerhub
         uses: elgohr/Publish-Docker-Github-Action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           name: davidgortega/dvc-cml
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -20,4 +18,3 @@ jobs:
           dockerfile: ./docker/Dockerfile
           context: ./
           tags: dev
-          buildargs: GITHUB_TOKEN

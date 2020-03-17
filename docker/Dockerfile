@@ -1,5 +1,3 @@
-ARG GITHUB_TOKEN
-
 FROM ubuntu:18.04
 
 LABEL Iterative Inc
@@ -21,11 +19,9 @@ RUN yes | pip3 install dvc[all]
 
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash
 RUN apt install -y nodejs
-# RUN npm install -g iterative/dvc-cicd#master
-#RUN npm install -g git+https://${GITHUB_TOKEN}:x-oauth-basic@github.com/DavidGOrtega/dvc-action.git#gitlab
 
-ADD "./" "/dvc-action"
-RUN npm install -g /dvc-action
+ADD "./" "/code"
+RUN npm install -g /code
 
 COPY "./docker/entrypoint.sh" "/entrypoint.sh"
 CMD ["/entrypoint.sh"]
