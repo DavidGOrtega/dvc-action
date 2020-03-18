@@ -1,5 +1,6 @@
 const { exec } = require('./utils');
 const CI = require('./ci');
+var querystring = require('querystring');
 
 const {
   CI_API_V4_URL,
@@ -41,17 +42,18 @@ const publish_report = async opts => {
 
   if (!repro_sha) return;
 
-  const data = JSON.stringify({ description: report });
-  const endpoint = `${CI_API_V4_URL}/${CI_PROJECT_PATH}/releases/${CI.sha_tag(
+  const data = `description=${report.replace('\n', '\r\n')}`;
+  const project = querystring.stringify(CI_PROJECT_PATH);
+  const endpoint = `${CI_API_V4_URL}/projects/${project}/repository/tags/${CI.sha_tag(
     repro_sha
-  )}`;
+  )}/release`;
 
   console.log(
-    `curl --header 'Content-Type: application/json' --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" --request PUT --data ${data} "${endpoint}"`
+    `curl --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" --request PUT --data ${data} "${endpoint}"`
   );
   console.log(
     await exec(
-      `curl --header 'Content-Type: application/json' --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" --request PUT --data ${data} "${endpoint}"`
+      `curl  --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" --request PUT --data ${data} "${endpoint}"`
     )
   );
 };
