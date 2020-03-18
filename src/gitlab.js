@@ -23,9 +23,9 @@ const REMOTE = `https://${owner}:${GITLAB_TOKEN}@gitlab.com/${owner}/${repo}.git
 
 const ref_parser = async ref => {
   const tag = CI.sha_tag(ref);
-  const uri = `${CI_API_V4_URL}/${CI_PROJECT_PATH}/-/tags/${tag}`;
+  const link = `${CI_API_V4_URL}/${CI_PROJECT_PATH}/-/tags/${tag}`;
 
-  return uri;
+  return { label: tag, link };
 };
 
 const check_ran_ref = async opts => {
