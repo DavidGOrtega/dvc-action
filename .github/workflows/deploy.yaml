@@ -1,6 +1,14 @@
 name: deploy
 
-on: [push]
+#on: [push]
+
+on:
+  push:
+    branches:
+      - master
+  release:
+    types:
+      - created
 
 jobs:
   publish_dockehub:
@@ -20,7 +28,8 @@ jobs:
           tags: dev
           cache: true
 
-      - name: Publish to dockerhub
+      - name: Publish release to dockerhub
+        if: github.event == 'release'
         uses: elgohr/Publish-Docker-Github-Action@master
         with:
           name: davidgortega/dvc-cml
@@ -28,4 +37,5 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           dockerfile: ./docker/Dockerfile
           context: ./
+          tag_semver: true
           cache: true
