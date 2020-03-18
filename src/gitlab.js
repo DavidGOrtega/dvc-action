@@ -50,11 +50,11 @@ const publish_report = async opts => {
   )}/release`;
 
   console.log(
-    `curl --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" --request PUT --data ${data} "${endpoint}"`
+    `curl --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" --request POST --data ${data} "${endpoint}"`
   );
   console.log(
     await exec(
-      `curl  --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" --request PUT --data ${data} "${endpoint}"`
+      `curl  --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" --request POST --data ${data} "${endpoint}"`
     )
   );
 };
