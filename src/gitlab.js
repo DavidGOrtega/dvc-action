@@ -1,5 +1,7 @@
 const { exec } = require('./utils');
 const CI = require('./ci');
+const fetch = require('node-fetch');
+const { URLSearchParams } = require('url');
 
 const {
   CI_API_V4_URL,
@@ -42,22 +44,16 @@ const publish_report = async opts => {
 
   if (!repro_sha) return;
 
-  const data = `"description=${encodeURIComponent(
-    report.replace('\n', '\r\n')
-  )}"`;
   const project = encodeURIComponent(CI_PROJECT_PATH);
   const endpoint = `${CI_API_V4_URL}/projects/${project}/repository/tags/${CI.sha_tag(
     repro_sha
   )}/release`;
 
-  console.log(
-    `curl --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" --request POST --data ${data} "${endpoint}"`
-  );
-  console.log(
-    await exec(
-      `curl  --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" --request POST --data ${data} "${endpoint}"`
-    )
-  );
+  const body = new URLSearchParams();
+  body.append('description', report);
+
+  const headers = { 'PRIVATE-TOKEN': GITLAB_TOKEN };
+  await fetch(endpoint, { method: 'PUT', headers, body });
 };
 
 const handle_error = e => {
