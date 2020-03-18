@@ -41,9 +41,9 @@ const publish_report = async opts => {
 
   if (!repro_sha) return;
 
-  const data = `description=${encodeURIComponent(
+  const data = `"description=${encodeURIComponent(
     report.replace('\n', '\r\n')
-  )}`;
+  )}"`;
   const project = encodeURIComponent(CI_PROJECT_PATH);
   const endpoint = `${CI_API_V4_URL}/projects/${project}/repository/tags/${CI.sha_tag(
     repro_sha
