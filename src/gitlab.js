@@ -45,8 +45,14 @@ const publish_report = async opts => {
   const endpoint = `${CI_API_V4_URL}/${CI_PROJECT_PATH}/releases/${CI.sha_tag(
     repro_sha
   )}`;
-  await exec(
+
+  console.log(
     `curl --header 'Content-Type: application/json' --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" --request PUT --data ${data} "${endpoint}"`
+  );
+  console.log(
+    await exec(
+      `curl --header 'Content-Type: application/json' --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" --request PUT --data ${data} "${endpoint}"`
+    )
   );
 };
 
