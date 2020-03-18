@@ -4,9 +4,6 @@ name: deploy
 
 on:
   push:
-  release:
-    types:
-      - created
 
 jobs:
   publish_dockehub:
