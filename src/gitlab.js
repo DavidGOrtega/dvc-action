@@ -53,7 +53,7 @@ const publish_report = async opts => {
   body.append('description', report);
 
   const headers = { 'PRIVATE-TOKEN': GITLAB_TOKEN };
-  await fetch(endpoint, { method: 'PUT', headers, body });
+  await fetch(endpoint, { method: 'POST', headers, body });
 };
 
 const handle_error = e => {
