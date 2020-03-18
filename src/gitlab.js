@@ -1,5 +1,5 @@
 const { exec } = require('./utils');
-const CI = require('./CI');
+const CI = require('./ci');
 
 const {
   CI_API_V4_URL,
