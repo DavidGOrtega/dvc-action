@@ -23,7 +23,6 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           dockerfile: ./docker/Dockerfile
           context: ./
-          tags: dev
           cache: true
 
       - name: Publish release to dockerhub
