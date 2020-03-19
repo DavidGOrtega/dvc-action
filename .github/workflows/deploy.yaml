@@ -6,6 +6,7 @@ on:
     branches:
       - master
       - 'releases/**'
+      - 'tags/**'
 
 jobs:
   publish_dockehub:
