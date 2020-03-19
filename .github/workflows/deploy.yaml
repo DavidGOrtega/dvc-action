@@ -1,9 +1,11 @@
 name: deploy
 
 #on: [push]
-
 on:
   push:
+    branches:
+      - master
+      - 'releases/**'
 
 jobs:
   publish_dockehub:
