@@ -5,8 +5,8 @@ on:
   push:
     branches:
       - master
-      - 'releases/**'
-      - 'tags/**'
+    tags:
+      - dev*
 
 jobs:
   publish_dockehub:
