@@ -14,7 +14,7 @@
     "test": "eslint index.js && jest"
   },
   "dependencies": {
-    "@actions/core": "^1.2.0",
+    "@actions/core": "^1.2.6",
     "@actions/github": "^2.0.0",
     "canvas": "^2.6.1",
     "glob": "^7.1.6",
